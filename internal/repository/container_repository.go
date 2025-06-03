@@ -27,6 +27,7 @@ type IContainerRepository interface {
 	ViewAllContainers(ctx context.Context, containerFilter *dto.ContainerFilter, from, to int, sortBy string, sortOrder string) (int64, []model.Container, error)
 	UpdateContainer(ctx context.Context, id uint, updateData map[string]interface{}) (*model.Container, error)
 	DeleteContainer(ctx context.Context, id uint) error
+	GetContainerByID(ctx context.Context, id uint) (*model.Container, error)
 
 	GetContainerInfo(ctx context.Context) ([]dto.ContainerName, error)
 
@@ -258,6 +259,17 @@ func (r *containerRepository) DeleteContainer(ctx context.Context, id uint) erro
 
 	r.logger.Info("Container deleted successfully", "id", id)
 	return nil
+}
+
+func (r *containerRepository) GetContainerByID(ctx context.Context, id uint) (*model.Container, error) {
+	var container model.Container
+	if err := r.db.WithContext(ctx).First(&container, id).Error; err != nil {
+		r.logger.Error("Container not found", "id", id, "error", err)
+		return nil, fmt.Errorf("container not found: %w", err)
+	}
+
+	r.logger.Info("Container retrieved successfully", "id", id)
+	return &container, nil
 }
 
 func (r *containerRepository) GetContainerInfo(ctx context.Context) ([]dto.ContainerName, error) {

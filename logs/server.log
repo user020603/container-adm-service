@@ -1,3 +1,5 @@
 2025-06-02T18:07:47.933+0700	info	repository/container_repository.go:79	[INFO] Container created successfully	{"container_id": 1}
 2025-06-02T18:07:47.934+0700	info	service/container_service.go:55	[INFO] Container created successfully	{"databaseID": 1, "containerID": "e5cdf35eb2471ceb1b239d3a5361e96b47de1c949df65a9bfb64c4d304219737"}
 2025-06-02T18:07:47.934+0700	info	cmd/main.go:49	[INFO] Container created successfully	{"container_id": 1}
+2025-06-03T11:46:43.575+0700	info	repository/container_repository.go:122	[INFO] Containers inserted successfully	{"createdCount": 5, "failedCount": 0}
+2025-06-03T11:46:43.575+0700	info	service/container_service.go:217	[INFO] Containers imported successfully	{"successfulCount": 5, "failedCount": 0}

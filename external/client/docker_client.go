@@ -13,6 +13,7 @@ import (
 type IDockerClient interface {
 	StartContainer(ctx context.Context, containerName, imageName string) (string, error)
 	StopContainer(ctx context.Context, containerID string) error
+	RemoveContainer(ctx context.Context, containerID string) error
 }
 
 type dockerClient struct {
@@ -52,7 +53,7 @@ func (d *dockerClient) StartContainer(ctx context.Context, containerName, imageN
 
 	if err := d.client.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		// Clean up the container if it fails to start
-		if removeErr := d.client.ContainerRemove(ctx, resp.ID, container.RemoveOptions{Force: true}); removeErr != nil {
+		if removeErr := d.RemoveContainer(ctx, resp.ID); removeErr != nil {
 			return "", fmt.Errorf("failed to remove container %s after start failure: %w", resp.ID, removeErr)
 		}
 		return "", fmt.Errorf("failed to start container %s: %w", containerName, err)
@@ -64,6 +65,13 @@ func (d *dockerClient) StartContainer(ctx context.Context, containerName, imageN
 func (d *dockerClient) StopContainer(ctx context.Context, containerID string) error {
 	if err := d.client.ContainerStop(ctx, containerID, container.StopOptions{}); err != nil {
 		return fmt.Errorf("failed to stop container %s: %w", containerID, err)
+	}
+	return nil
+}
+
+func (d *dockerClient) RemoveContainer(ctx context.Context, containerID string) error {
+	if err := d.client.ContainerRemove(ctx, containerID, container.RemoveOptions{Force: true}); err != nil {
+		return fmt.Errorf("failed to remove container %s: %w", containerID, err)
 	}
 	return nil
 }
