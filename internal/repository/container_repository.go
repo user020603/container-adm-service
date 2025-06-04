@@ -126,20 +126,22 @@ func (r *containerRepository) CreateManyContainers(ctx context.Context, containe
 func (r *containerRepository) ViewAllContainers(ctx context.Context, containerFilter *dto.ContainerFilter, from, to int, sortBy string, sortOrder string) (int64, []model.Container, error) {
 	query := r.db.WithContext(ctx).Model(&model.Container{})
 
-	if containerFilter.ContainerID != "" {
-		query = query.Where("container_id = ?", containerFilter.ContainerID)
-	}
+	if containerFilter != nil {
+		if containerFilter.ContainerID != "" {
+			query = query.Where("container_id = ?", containerFilter.ContainerID)
+		}
 
-	if containerFilter.ContainerName != "" {
-		query = query.Where("container_name LIKE ?", "%"+containerFilter.ContainerName+"%")
-	}
+		if containerFilter.ContainerName != "" {
+			query = query.Where("container_name LIKE ?", "%"+containerFilter.ContainerName+"%")
+		}
 
-	if containerFilter.ImageName != "" {
-		query = query.Where("image_name LIKE ?", "%"+containerFilter.ImageName+"%")
-	}
+		if containerFilter.ImageName != "" {
+			query = query.Where("image_name LIKE ?", "%"+containerFilter.ImageName+"%")
+		}
 
-	if containerFilter.Status != "" {
-		query = query.Where("status = ?", containerFilter.Status)
+		if containerFilter.Status != "" {
+			query = query.Where("status = ?", containerFilter.Status)
+		}
 	}
 
 	var totalContainers int64
