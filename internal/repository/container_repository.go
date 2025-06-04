@@ -152,6 +152,7 @@ func (r *containerRepository) ViewAllContainers(ctx context.Context, containerFi
 
 	if sortBy != "" {
 		allowedSortFields := map[string]bool{
+			"id":             true,
 			"container_id":   true,
 			"container_name": true,
 			"image_name":     true,
