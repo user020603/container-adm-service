@@ -21,6 +21,13 @@ type IContainerService interface {
 	DeleteContainer(ctx context.Context, id uint) error
 	ImportContainers(ctx context.Context, buf []byte) (*dto.ImportResult, error)
 	ExportContainers(ctx context.Context, containerFilter *dto.ContainerFilter, from, to int, sortBy, sortOrder string) (*dto.ExportData, error)
+
+	GetAllContainers(ctx context.Context) ([]dto.ContainerName, error)
+
+	AddContainerStatus(ctx context.Context, id uint, status string) error
+	GetNumContainers(ctx context.Context) (int64, error)
+	GetNumRunningContainers(ctx context.Context) (int64, error)
+	GetContainerUptimeRatio(ctx context.Context, startTime, endTime time.Time) (float64, error)
 }
 
 type containerService struct {
@@ -78,14 +85,60 @@ func (s *containerService) ViewAllContainers(ctx context.Context, containerFilte
 }
 
 func (s *containerService) UpdateContainer(ctx context.Context, id uint, updateData map[string]interface{}) (*model.Container, error) {
-	container, err := s.repo.UpdateContainer(ctx, id, updateData)
-	if err != nil {
-		s.logger.Error("Failed to update container", "id", id, "error", err)
-		return nil, fmt.Errorf("failed to update container: %w", err)
+	if _, exists := updateData["ContainerName"]; exists {
+		s.logger.Warn("Container name update is not allowed", "id", id)
+		return nil, fmt.Errorf("updating container name is not allowed")
 	}
 
-	s.logger.Info("Container updated successfully", "id", id)
-	return container, nil
+	container, err := s.repo.GetContainerByID(ctx, id)
+	if err != nil {
+		s.logger.Error("Failed to retrieve container for update", "id", id, "error", err)
+		return nil, fmt.Errorf("failed to retrieve container for update: %w", err)
+	}
+	if container == nil {
+		s.logger.Warn("Container not found for update", "id", id)
+		return nil, fmt.Errorf("container with ID %d not found", id)
+	}
+
+	if image, ok := updateData["ImageName"].(string); ok && image != "" && image != container.ImageName {
+		if err := s.dockerClient.StopContainer(ctx, container.ContainerID); err != nil {
+			s.logger.Error("Failed to update Docker container image", "containerID", container.ContainerID, "error", err)
+			return nil, fmt.Errorf("failed to update Docker container image: %w", err)
+		}
+		if err := s.dockerClient.RemoveContainer(ctx, container.ContainerID); err != nil {
+			s.logger.Error("Failed to remove Docker container before updating image", "containerID", container.ContainerID, "error", err)
+			return nil, fmt.Errorf("failed to remove Docker container before updating image: %w", err)
+		}
+		newContainerID, err := s.dockerClient.StartContainer(ctx, container.ContainerName, image)
+		if err != nil {
+			s.logger.Error("Failed to start Docker container with new image", "containerName", container.ContainerName, "image", image, "error", err)
+			return nil, fmt.Errorf("failed to start Docker container with new image: %w", err)
+		}
+		updateData["ContainerID"] = newContainerID
+	}
+
+	if status, ok := updateData["Status"].(string); ok && status != "" && status != container.Status {
+		if status == "running" && container.Status != "running" {
+			if _, err := s.dockerClient.StartContainer(ctx, container.ContainerName, container.ContainerID); err != nil {
+				s.logger.Error("Failed to start Docker container", "containerID", container.ContainerID, "error", err)
+				return nil, fmt.Errorf("failed to start Docker container: %w", err)
+			}
+		} else if status == "stopped" && container.Status != "stopped" {
+			if err := s.dockerClient.StopContainer(ctx, container.ContainerID); err != nil {
+				s.logger.Error("Failed to stop Docker container", "containerID", container.ContainerID, "error", err)
+				return nil, fmt.Errorf("failed to stop Docker container: %w", err)
+			}
+		}
+	}
+
+	updatedContainer, err := s.repo.UpdateContainer(ctx, id, updateData)
+	if err != nil {
+		s.logger.Error("Failed to update container in repository", "id", id, "error", err)
+		return nil, fmt.Errorf("failed to update container in repository: %w", err)
+	}
+
+	s.logger.Info("Container updated successfully", "id", id, "containerID", updatedContainer.ContainerID)
+	return updatedContainer, nil
 }
 
 func (s *containerService) DeleteContainer(ctx context.Context, id uint) error {
@@ -281,4 +334,65 @@ func (s *containerService) ExportContainers(ctx context.Context, containerFilter
 	}
 
 	return exportResult, nil
+}
+
+func (s *containerService) GetAllContainers(ctx context.Context) ([]dto.ContainerName, error) {
+	containers, err := s.repo.GetContainerInfo(ctx)
+	if err != nil {
+		s.logger.Error("Failed to retrieve container names", "error", err)
+		return nil, fmt.Errorf("failed to retrieve container names: %w", err)
+	}
+
+	containerNames := make([]dto.ContainerName, len(containers))
+	for i, container := range containers {
+		containerNames[i] = dto.ContainerName{
+			ID:            container.ID,
+			ContainerName: container.ContainerName,
+		}
+	}
+
+	return containerNames, nil
+}
+
+func (s *containerService) AddContainerStatus(ctx context.Context, id uint, status string) error {
+	if err := s.repo.AddContainerStatus(ctx, id, status); err != nil {
+		s.logger.Error("Failed to add container status", "id", id, "status", status, "error", err)
+		return fmt.Errorf("failed to add container status: %w", err)
+	}
+
+	s.logger.Info("Container status added successfully", "id", id, "status", status)
+	return nil
+}
+
+func (s *containerService) GetNumContainers(ctx context.Context) (int64, error) {
+	numContainers, err := s.repo.GetNumContainers(ctx)
+	if err != nil {
+		s.logger.Error("Failed to get number of containers", "error", err)
+		return 0, fmt.Errorf("failed to get number of containers: %w", err)
+	}
+
+	s.logger.Info("Number of containers retrieved successfully", "count", numContainers)
+	return numContainers, nil
+}
+
+func (s *containerService) GetNumRunningContainers(ctx context.Context) (int64, error) {
+	numOnContainers, err := s.repo.GetNumRunningContainers(ctx)
+	if err != nil {
+		s.logger.Error("Failed to get number of running containers", "error", err)
+		return 0, fmt.Errorf("failed to get number of running containers: %w", err)
+	}
+
+	s.logger.Info("Number of running containers retrieved successfully", "count", numOnContainers)
+	return numOnContainers, nil
+}
+
+func (s *containerService) GetContainerUptimeRatio(ctx context.Context, startTime, endTime time.Time) (float64, error) {
+	uptimeRatio, err := s.repo.GetContainerUptimeRatio(ctx, startTime, endTime)
+	if err != nil {
+		s.logger.Error("Failed to get container uptime ratio", "startTime", startTime, "endTime", endTime, "error", err)
+		return 0, fmt.Errorf("failed to get container uptime ratio: %w", err)
+	}
+
+	s.logger.Info("Container uptime ratio retrieved successfully", "uptimeRatio", uptimeRatio)
+	return uptimeRatio, nil
 }
