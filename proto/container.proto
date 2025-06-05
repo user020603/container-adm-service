@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package container_adm_service;
+
+option go_package = "./proto/pb";
+
+service ContainerAdmService {
+    rpc GetAllContainers(EmptyRequest) returns (ContainerResponse);
+    rpc GetContainerInformation(GetContainerInfomationRequest) returns (GetContainerInfomationResponse);
+}
+
+message EmptyRequest {}
+
+message ContainerResponse {
+    repeated ContainerName containers = 1;
+}
+
+message ContainerName {
+    string id = 1;
+    string containerName = 2;
+}
+
+message GetContainerInfomationRequest {
+    int64 startTime = 1;
+    int64 endTime = 2;
+}
+
+message GetContainerInfomationResponse {
+    int64 numContainers = 1;
+    int64 numRunningContainers = 2;
+    int64 numStoppedContainers = 3;
+    float meanUptimeRatio = 4;
+}
