@@ -1,15 +1,21 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"net"
 	"os"
+	"os/signal"
+	"syscall"
 	"thanhnt208/container-adm-service/config"
 	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/infrastructure"
+	"thanhnt208/container-adm-service/internal/delivery/grpc"
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
+	"thanhnt208/container-adm-service/proto/pb"
+
+	grpcServer "google.golang.org/grpc"
 )
 
 func main() {
@@ -42,22 +48,33 @@ func main() {
 
 	containerRepository := repository.NewContainerRepository(db, esClient, log)
 	containerService := service.NewContainerService(containerRepository, log, dockerClient)
+	containerHandler := grpc.NewGrpcServerHandler(containerService, log)
 
-	fmt.Println("Exporting containers to Excel...")
+	grpcPort := cfg.GrpcPort
+	log.Info("Starting gRPC server", "port", grpcPort)
 
-	exportData, err := containerService.ExportContainers(context.Background(), nil, 0, 100, "", "")
+	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
-		log.Error("Failed to export containers", "error", err)
-		fmt.Printf("❌ Export failed: %v\n", err)
-		return
+		log.Error("Failed to listen on port", "port", grpcPort, "error", err)
+		panic("Failed to listen on port: " + err.Error())
 	}
 
-	if err := os.WriteFile(exportData.FileName, exportData.Data, 0644); err != nil {
-		log.Error("Failed to save exported Excel file", "error", err)
-		fmt.Printf("❌ Failed to save exported Excel file: %v\n", err)
-		return
-	}
+	grpcServer := grpcServer.NewServer()
+	pb.RegisterContainerAdmServiceServer(grpcServer, containerHandler)
 
-	fmt.Printf("✅ Exported containers to file: %s\n", exportData.FileName)
-	fmt.Println("\n🎉 Export test completed!")
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Error("Failed to serve gRPC server", "error", err)
+			panic("Failed to serve gRPC server: " + err.Error())
+		}
+	}()
+
+	fmt.Printf("gRPC server is running on port %s\n", grpcPort)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Info("Shutting down gRPC server...")
+	grpcServer.GracefulStop()
+	log.Info("gRPC server exiting")
 }
