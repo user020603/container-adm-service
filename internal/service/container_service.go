@@ -85,7 +85,7 @@ func (s *containerService) ViewAllContainers(ctx context.Context, containerFilte
 }
 
 func (s *containerService) UpdateContainer(ctx context.Context, id uint, updateData map[string]interface{}) (*model.Container, error) {
-	if _, exists := updateData["ContainerName"]; exists {
+	if _, exists := updateData["container_name"]; exists {
 		s.logger.Warn("Container name update is not allowed", "id", id)
 		return nil, fmt.Errorf("updating container name is not allowed")
 	}
@@ -100,7 +100,7 @@ func (s *containerService) UpdateContainer(ctx context.Context, id uint, updateD
 		return nil, fmt.Errorf("container with ID %d not found", id)
 	}
 
-	if image, ok := updateData["ImageName"].(string); ok && image != "" && image != container.ImageName {
+	if image, ok := updateData["image_name"].(string); ok && image != "" && image != container.ImageName {
 		if err := s.dockerClient.StopContainer(ctx, container.ContainerID); err != nil {
 			s.logger.Error("Failed to update Docker container image", "containerID", container.ContainerID, "error", err)
 			return nil, fmt.Errorf("failed to update Docker container image: %w", err)
@@ -117,9 +117,9 @@ func (s *containerService) UpdateContainer(ctx context.Context, id uint, updateD
 		updateData["ContainerID"] = newContainerID
 	}
 
-	if status, ok := updateData["Status"].(string); ok && status != "" && status != container.Status {
+	if status, ok := updateData["status"].(string); ok && status != "" && status != container.Status {
 		if status == "running" && container.Status != "running" {
-			if _, err := s.dockerClient.StartContainer(ctx, container.ContainerName, container.ContainerID); err != nil {
+			if err := s.dockerClient.StartExistingContainer(ctx, container.ContainerID); err != nil {
 				s.logger.Error("Failed to start Docker container", "containerID", container.ContainerID, "error", err)
 				return nil, fmt.Errorf("failed to start Docker container: %w", err)
 			}
