@@ -46,10 +46,10 @@ func LoadConfig() *Config {
 			RedisPassword: getEnv("REDIS_PASSWORD", ""),
 			EsAddr:        getEnv("ES_ADDR", "http://localhost:9200"),
 			KafkaBrokers:  []string{getEnv("KAFKA_BROKERS", "localhost:9092")},
-			KafkaTopic:    getEnv("KAFKA_TOPIC", "server_topic"),
-			KafkaGroupID:  getEnv("KAFKA_GROUP_ID", "server_group"),
+			KafkaTopic:    getEnv("KAFKA_TOPIC", "container_topic"),
+			KafkaGroupID:  getEnv("KAFKA_GROUP_ID", "container_group_id"),
 			LogLevel:      getEnv("LOG_LEVEL", "info"),
-			LogFile:       getEnv("LOG_FILE", "../logs/server.log"),
+			LogFile:       getEnv("LOG_FILE", "../logs/container.log"),
 		}
 	})
 
