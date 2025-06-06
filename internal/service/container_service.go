@@ -342,16 +342,7 @@ func (s *containerService) GetAllContainers(ctx context.Context) ([]dto.Containe
 		s.logger.Error("Failed to retrieve container names", "error", err)
 		return nil, fmt.Errorf("failed to retrieve container names: %w", err)
 	}
-
-	containerNames := make([]dto.ContainerName, len(containers))
-	for i, container := range containers {
-		containerNames[i] = dto.ContainerName{
-			ID:            container.ID,
-			ContainerName: container.ContainerName,
-		}
-	}
-
-	return containerNames, nil
+	return containers, nil
 }
 
 func (s *containerService) AddContainerStatus(ctx context.Context, id uint, status string) error {
