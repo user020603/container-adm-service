@@ -49,7 +49,7 @@ func LoadConfig() *Config {
 			KafkaTopic:    getEnv("KAFKA_TOPIC", "container_topic"),
 			KafkaGroupID:  getEnv("KAFKA_GROUP_ID", "container_group_id"),
 			LogLevel:      getEnv("LOG_LEVEL", "info"),
-			LogFile:       getEnv("LOG_FILE", "../logs/container.log"),
+			LogFile:       getEnv("LOG_FILE", "../../logs/container-adm.log"),
 		}
 	})
 
