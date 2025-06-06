@@ -1,0 +1,163 @@
+2025-06-06T14:06:31.538+0700	info	rest/main.go:61	[INFO] Starting REST server	{"port": "8001"}
+2025-06-06T14:06:35.258+0700	info	grpc/main.go:54	[INFO] Starting gRPC server	{"port": "50051"}
+2025-06-06T14:06:49.835+0700	info	kafka/main.go:64	[INFO] Starting Kafka consumer
+2025-06-06T14:35:08.966+0700	info	repository/container_repository.go:287	[INFO] Container names retrieved successfully	{"count": 3}
+2025-06-06T14:35:09.060+0700	info	grpc/grpc_server_handler.go:45	[INFO] GetAllContainers: successfully retrieved containers	{"count": 3}
+2025-06-06T14:35:13.265+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "1", "value": "{\"container_name\":\"nginx-container-3\",\"id\":1,\"status\":false}"}
+2025-06-06T14:35:13.245+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "3", "value": "{\"container_name\":\"nginx-container-5\",\"id\":3,\"status\":true}"}
+2025-06-06T14:35:13.282+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "2", "value": "{\"container_name\":\"nginx-container-4\",\"id\":2,\"status\":true}"}
+2025-06-06T14:35:13.319+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 1, "containerName": "nginx-container-3"}
+2025-06-06T14:35:13.319+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 3, "containerName": "nginx-container-5"}
+2025-06-06T14:35:13.438+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 2, "containerName": "nginx-container-4"}
+2025-06-06T14:35:14.598+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 2}
+2025-06-06T14:35:15.424+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
+2025-06-06T14:35:15.431+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 2}
+2025-06-06T14:35:15.431+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 2, "containerID": "b422b6c389300e24639a6b9ff18024a8e266214900d8c0f59e4d148a130ff347"}
+2025-06-06T14:35:15.431+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 2, "status": "running"}
+2025-06-06T14:35:15.431+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 2, "status": "running"}
+2025-06-06T14:35:15.435+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 3}
+2025-06-06T14:35:15.550+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
+2025-06-06T14:35:15.550+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
+2025-06-06T14:35:15.550+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 1, "status": "stopped"}
+2025-06-06T14:35:15.550+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 1, "status": "stopped"}
+2025-06-06T14:35:16.749+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 3}
+2025-06-06T14:35:16.749+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 3, "containerID": "22ecf87919807128be7cc61ae7f904ad9518ffdbd65bd88e149b8ea4d16d6ef2"}
+2025-06-06T14:35:16.749+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 3, "status": "running"}
+2025-06-06T14:35:16.749+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 3, "status": "running"}
+2025-06-06T14:35:17.373+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:35:17.373+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:35:17.373+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 2, "status": "running"}
+2025-06-06T14:35:17.422+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 1, "status": "stopped"}
+2025-06-06T14:35:17.422+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 1, "status": "stopped"}
+2025-06-06T14:35:17.422+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 1, "status": "stopped"}
+2025-06-06T14:35:17.435+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:35:17.435+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:35:17.435+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 3, "status": "running"}
+2025-06-06T14:36:12.542+0700	info	repository/container_repository.go:287	[INFO] Container names retrieved successfully	{"count": 3}
+2025-06-06T14:36:12.542+0700	info	grpc/grpc_server_handler.go:45	[INFO] GetAllContainers: successfully retrieved containers	{"count": 3}
+2025-06-06T14:36:13.674+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "1", "value": "{\"container_name\":\"nginx-container-3\",\"id\":1,\"status\":false}"}
+2025-06-06T14:36:13.679+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 1, "containerName": "nginx-container-3"}
+2025-06-06T14:36:13.706+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "3", "value": "{\"container_name\":\"nginx-container-5\",\"id\":3,\"status\":true}"}
+2025-06-06T14:36:13.706+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 3, "containerName": "nginx-container-5"}
+2025-06-06T14:36:13.717+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
+2025-06-06T14:36:13.718+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 3}
+2025-06-06T14:36:13.757+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "2", "value": "{\"container_name\":\"nginx-container-4\",\"id\":2,\"status\":true}"}
+2025-06-06T14:36:13.757+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 2, "containerName": "nginx-container-4"}
+2025-06-06T14:36:13.758+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 2}
+2025-06-06T14:36:13.759+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
+2025-06-06T14:36:13.759+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
+2025-06-06T14:36:13.759+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 1, "status": "stopped"}
+2025-06-06T14:36:13.759+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 1, "status": "stopped"}
+2025-06-06T14:36:13.785+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 3}
+2025-06-06T14:36:13.786+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 3, "containerID": "22ecf87919807128be7cc61ae7f904ad9518ffdbd65bd88e149b8ea4d16d6ef2"}
+2025-06-06T14:36:13.786+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 3, "status": "running"}
+2025-06-06T14:36:13.786+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 3, "status": "running"}
+2025-06-06T14:36:13.787+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 2}
+2025-06-06T14:36:13.787+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 2, "containerID": "b422b6c389300e24639a6b9ff18024a8e266214900d8c0f59e4d148a130ff347"}
+2025-06-06T14:36:13.787+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 2, "status": "running"}
+2025-06-06T14:36:13.787+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 2, "status": "running"}
+2025-06-06T14:36:13.796+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 1, "status": "stopped"}
+2025-06-06T14:36:13.799+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 1, "status": "stopped"}
+2025-06-06T14:36:13.799+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 1, "status": "stopped"}
+2025-06-06T14:36:13.827+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:36:13.828+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:36:13.828+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 3, "status": "running"}
+2025-06-06T14:36:13.828+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:36:13.828+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:36:13.828+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 2, "status": "running"}
+2025-06-06T14:37:13.666+0700	info	repository/container_repository.go:287	[INFO] Container names retrieved successfully	{"count": 3}
+2025-06-06T14:37:13.667+0700	info	grpc/grpc_server_handler.go:45	[INFO] GetAllContainers: successfully retrieved containers	{"count": 3}
+2025-06-06T14:37:15.080+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "3", "value": "{\"container_name\":\"nginx-container-5\",\"id\":3,\"status\":true}"}
+2025-06-06T14:37:15.081+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 3, "containerName": "nginx-container-5"}
+2025-06-06T14:37:15.083+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "2", "value": "{\"container_name\":\"nginx-container-4\",\"id\":2,\"status\":true}"}
+2025-06-06T14:37:15.083+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 2, "containerName": "nginx-container-4"}
+2025-06-06T14:37:15.083+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 3}
+2025-06-06T14:37:15.085+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 2}
+2025-06-06T14:37:15.087+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 3}
+2025-06-06T14:37:15.087+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 3, "containerID": "22ecf87919807128be7cc61ae7f904ad9518ffdbd65bd88e149b8ea4d16d6ef2"}
+2025-06-06T14:37:15.087+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 3, "status": "running"}
+2025-06-06T14:37:15.087+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 3, "status": "running"}
+2025-06-06T14:37:15.088+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "1", "value": "{\"container_name\":\"nginx-container-3\",\"id\":1,\"status\":true}"}
+2025-06-06T14:37:15.088+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 1, "containerName": "nginx-container-3"}
+2025-06-06T14:37:15.091+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 2}
+2025-06-06T14:37:15.091+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 2, "containerID": "b422b6c389300e24639a6b9ff18024a8e266214900d8c0f59e4d148a130ff347"}
+2025-06-06T14:37:15.091+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 2, "status": "running"}
+2025-06-06T14:37:15.091+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 2, "status": "running"}
+2025-06-06T14:37:15.092+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
+2025-06-06T14:37:15.107+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:37:15.108+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:37:15.108+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 3, "status": "running"}
+2025-06-06T14:37:15.123+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:37:15.123+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:37:15.123+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 2, "status": "running"}
+2025-06-06T14:37:15.443+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
+2025-06-06T14:37:15.443+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
+2025-06-06T14:37:15.443+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 1, "status": "running"}
+2025-06-06T14:37:15.443+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 1, "status": "running"}
+2025-06-06T14:37:15.452+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:37:15.452+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:37:15.452+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 1, "status": "running"}
+2025-06-06T14:38:14.904+0700	info	repository/container_repository.go:287	[INFO] Container names retrieved successfully	{"count": 3}
+2025-06-06T14:38:14.928+0700	info	grpc/grpc_server_handler.go:45	[INFO] GetAllContainers: successfully retrieved containers	{"count": 3}
+2025-06-06T14:38:16.746+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "2", "value": "{\"container_name\":\"nginx-container-4\",\"id\":2,\"status\":true}"}
+2025-06-06T14:38:16.746+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 2, "containerName": "nginx-container-4"}
+2025-06-06T14:38:16.747+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 2}
+2025-06-06T14:38:16.768+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 2}
+2025-06-06T14:38:16.768+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 2, "containerID": "b422b6c389300e24639a6b9ff18024a8e266214900d8c0f59e4d148a130ff347"}
+2025-06-06T14:38:16.768+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 2, "status": "running"}
+2025-06-06T14:38:16.768+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 2, "status": "running"}
+2025-06-06T14:38:16.774+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:38:16.775+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:38:16.775+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 2, "status": "running"}
+2025-06-06T14:38:16.790+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "1", "value": "{\"container_name\":\"nginx-container-3\",\"id\":1,\"status\":true}"}
+2025-06-06T14:38:16.790+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 1, "containerName": "nginx-container-3"}
+2025-06-06T14:38:16.791+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
+2025-06-06T14:38:16.794+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "3", "value": "{\"container_name\":\"nginx-container-5\",\"id\":3,\"status\":true}"}
+2025-06-06T14:38:16.794+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 3, "containerName": "nginx-container-5"}
+2025-06-06T14:38:16.796+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 3}
+2025-06-06T14:38:16.797+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
+2025-06-06T14:38:16.797+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
+2025-06-06T14:38:16.797+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 1, "status": "running"}
+2025-06-06T14:38:16.797+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 1, "status": "running"}
+2025-06-06T14:38:16.799+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 3}
+2025-06-06T14:38:16.799+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 3, "containerID": "22ecf87919807128be7cc61ae7f904ad9518ffdbd65bd88e149b8ea4d16d6ef2"}
+2025-06-06T14:38:16.800+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 3, "status": "running"}
+2025-06-06T14:38:16.800+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 3, "status": "running"}
+2025-06-06T14:38:16.819+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:38:16.819+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:38:16.819+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 1, "status": "running"}
+2025-06-06T14:38:16.822+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:38:16.822+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:38:16.822+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 3, "status": "running"}
+2025-06-06T14:39:16.307+0700	info	repository/container_repository.go:287	[INFO] Container names retrieved successfully	{"count": 3}
+2025-06-06T14:39:16.309+0700	info	grpc/grpc_server_handler.go:45	[INFO] GetAllContainers: successfully retrieved containers	{"count": 3}
+2025-06-06T14:39:17.749+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "3", "value": "{\"container_name\":\"nginx-container-5\",\"id\":3,\"status\":true}"}
+2025-06-06T14:39:17.749+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 3, "containerName": "nginx-container-5"}
+2025-06-06T14:39:17.751+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 3}
+2025-06-06T14:39:17.753+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 3}
+2025-06-06T14:39:17.753+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 3, "containerID": "22ecf87919807128be7cc61ae7f904ad9518ffdbd65bd88e149b8ea4d16d6ef2"}
+2025-06-06T14:39:17.753+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 3, "status": "running"}
+2025-06-06T14:39:17.753+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 3, "status": "running"}
+2025-06-06T14:39:17.761+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:39:17.761+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 3, "status": "running"}
+2025-06-06T14:39:17.761+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 3, "status": "running"}
+2025-06-06T14:39:17.765+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "2", "value": "{\"container_name\":\"nginx-container-4\",\"id\":2,\"status\":true}"}
+2025-06-06T14:39:17.765+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 2, "containerName": "nginx-container-4"}
+2025-06-06T14:39:17.766+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 2}
+2025-06-06T14:39:17.768+0700	info	kafka/kafka_consumer_handler.go:40	[INFO] Received message from Kafka	{"key": "1", "value": "{\"container_name\":\"nginx-container-3\",\"id\":1,\"status\":true}"}
+2025-06-06T14:39:17.768+0700	info	kafka/kafka_consumer_handler.go:53	[INFO] Processing message	{"ID": 1, "containerName": "nginx-container-3"}
+2025-06-06T14:39:17.769+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
+2025-06-06T14:39:17.777+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 2}
+2025-06-06T14:39:17.778+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 2, "containerID": "b422b6c389300e24639a6b9ff18024a8e266214900d8c0f59e4d148a130ff347"}
+2025-06-06T14:39:17.778+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 2, "status": "running"}
+2025-06-06T14:39:17.778+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 2, "status": "running"}
+2025-06-06T14:39:17.778+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
+2025-06-06T14:39:17.778+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
+2025-06-06T14:39:17.778+0700	info	kafka/kafka_consumer_handler.go:69	[INFO] Successfully updated container status	{"ID": 1, "status": "running"}
+2025-06-06T14:39:17.778+0700	info	kafka/kafka_consumer_handler.go:71	[INFO] Write to ES	{"ID": 1, "status": "running"}
+2025-06-06T14:39:17.795+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:39:17.796+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 2, "status": "running"}
+2025-06-06T14:39:17.796+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 2, "status": "running"}
+2025-06-06T14:39:17.824+0700	info	repository/container_repository.go:326	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:39:17.824+0700	info	service/container_service.go:354	[INFO] Container status added successfully	{"id": 1, "status": "running"}
+2025-06-06T14:39:17.824+0700	info	kafka/kafka_consumer_handler.go:78	[INFO] Successfully added container status	{"ID": 1, "status": "running"}
