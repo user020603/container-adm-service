@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"thanhnt208/container-adm-service/proto/pb"
@@ -38,7 +37,7 @@ func (h *GrpcServerHandler) GetAllContainers(ctx context.Context, req *pb.EmptyR
 	containerName := make([]*pb.ContainerName, len(containers))
 	for i, container := range containers {
 		containerName[i] = &pb.ContainerName{
-			Id:            strconv.FormatUint(uint64(container.ID), 10),
+			Id:            uint64(container.Id),
 			ContainerName: container.ContainerName,
 		}
 	}

@@ -52,9 +52,9 @@ func (h *KafkaConsumerHandler) StartConsume(ctx context.Context) error {
 
 				h.logger.Info("Processing message", "ID", containerMessage.ID, "containerName", containerMessage.ContainerName)
 
-				status := "Stopped"
+				status := "stopped"
 				if containerMessage.Status {
-					status = "Running"
+					status = "running"
 				}
 
 				updateData := map[string]interface{}{
