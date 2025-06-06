@@ -1,6 +1,6 @@
 package dto
 
 type ContainerName struct {
-	ID            uint   `json:"id"`
+	Id            uint   `json:"id"`
 	ContainerName string `json:"container_name"`
 }
