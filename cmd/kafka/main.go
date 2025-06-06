@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,6 +62,7 @@ func main() {
 
 	go func() {
 		log.Info("Starting Kafka consumer")
+		fmt.Println("Starting Kafka consumer...")
 		if err := kafkaConsumerHandler.StartConsume(ctx); err != nil {
 			log.Error("Error consuming messages from Kafka", "error", err)
 			consumerDone <- err
