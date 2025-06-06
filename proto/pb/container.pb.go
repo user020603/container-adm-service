@@ -103,7 +103,7 @@ func (x *ContainerResponse) GetContainers() []*ContainerName {
 
 type ContainerName struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	ContainerName string                 `protobuf:"bytes,2,opt,name=containerName,proto3" json:"containerName,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -139,11 +139,11 @@ func (*ContainerName) Descriptor() ([]byte, []int) {
 	return file_proto_container_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ContainerName) GetId() string {
+func (x *ContainerName) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *ContainerName) GetContainerName() string {
@@ -284,7 +284,7 @@ const file_proto_container_proto_rawDesc = "" +
 	"containers\x18\x01 \x03(\v2$.container_adm_service.ContainerNameR\n" +
 	"containers\"E\n" +
 	"\rContainerName\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12$\n" +
 	"\rcontainerName\x18\x02 \x01(\tR\rcontainerName\"W\n" +
 	"\x1dGetContainerInfomationRequest\x12\x1c\n" +
 	"\tstartTime\x18\x01 \x01(\x03R\tstartTime\x12\x18\n" +
