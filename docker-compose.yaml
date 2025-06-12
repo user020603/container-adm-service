@@ -1,0 +1,167 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - webnet
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    networks:
+      - webnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: authdb
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-service.rule=Host(`localhost`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth-service.entrypoints=web"
+      - "traefik.http.services.auth-service.loadbalancer.server.port=8000"
+
+  container-adm-service:
+    build: ./container-adm-service
+    container_name: container-adm-service
+    networks:
+      - webnet
+    depends_on:
+      - postgres
+      - kafka
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: admdb
+      KAFKA_BROKER: kafka:9092
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.container-adm-rest.rule=Host(`localhost`) && PathPrefix(`/api/container-adm`)"
+      - "traefik.http.routers.container-adm-rest.entrypoints=web"
+      - "traefik.http.routers.container-adm-rest.service=container-adm-rest"
+      - "traefik.http.services.container-adm-rest.loadbalancer.server.port=8001"
+      - "traefik.http.routers.container-adm-grpc.rule=Host(`localhost`) && Headers(`Content-Type`, `application/grpc`)"
+      - "traefik.http.routers.container-adm-grpc.entrypoints=web"
+      - "traefik.http.routers.container-adm-grpc.service=container-adm-grpc"
+      - "traefik.http.services.container-adm-grpc.loadbalancer.server.port=50051"
+      - "traefik.http.services.container-adm-grpc.loadbalancer.server.scheme=h2c"
+
+  mail-service:
+    build: ./mail-service
+    container_name: mail-service
+    networks:
+      - webnet
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:9092
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mail-service.rule=Host(`localhost`) && PathPrefix(`/api/mail`)"
+      - "traefik.http.routers.mail-service.entrypoints=web"
+      - "traefik.http.services.mail-service.loadbalancer.server.port=8002"
+
+  healthcheck-service:
+    build: ./healthcheck-service
+    container_name: healthcheck-service
+    networks:
+      - webnet
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - webnet
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: auth-redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - webnet
+    expose:
+      - "6379"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: adm-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - webnet
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: adm-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - webnet
+
+  elasticsearch:
+    image: elasticsearch:8.13.4
+    container_name: adm-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - webnet
+    expose:
+      - "9200"
+
+networks:
+  webnet:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  es-data:
