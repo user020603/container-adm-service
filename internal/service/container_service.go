@@ -28,6 +28,7 @@ type IContainerService interface {
 	GetNumContainers(ctx context.Context) (int64, error)
 	GetNumRunningContainers(ctx context.Context) (int64, error)
 	GetContainerUptimeRatio(ctx context.Context, startTime, endTime time.Time) (float64, error)
+	GetContainerUptimeDuration(ctx context.Context, startTime, endTime time.Time) (*dto.UptimeDetails, error)
 }
 
 type containerService struct {
@@ -386,4 +387,15 @@ func (s *containerService) GetContainerUptimeRatio(ctx context.Context, startTim
 
 	s.logger.Info("Container uptime ratio retrieved successfully", "uptimeRatio", uptimeRatio)
 	return uptimeRatio, nil
+}
+
+func (s *containerService) GetContainerUptimeDuration(ctx context.Context, startTime, endTime time.Time) (*dto.UptimeDetails, error) {
+	uptimeDetails, err := s.repo.GetContainerUptimeDuration(ctx, startTime, endTime)
+	if err != nil {
+		s.logger.Error("Failed to get container uptime duration", "startTime", startTime, "endTime", endTime, "error", err)
+		return nil, fmt.Errorf("failed to get container uptime duration: %w", err)
+	}
+
+	s.logger.Info("Container uptime duration retrieved successfully", "totalUptime", uptimeDetails.TotalUptime)
+	return uptimeDetails, nil
 }
