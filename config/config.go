@@ -57,7 +57,7 @@ func LoadConfig() *Config {
 			DBName:          getEnv("DB_NAME", "admdb"),
 			RedisAddr:       getEnv("REDIS_ADDR", "localhost:6379"),
 			RedisPassword:   getEnv("REDIS_PASSWORD", ""),
-			EsAddr:          getEnv("ES_ADDR", "http://localhost:9200"),
+			EsAddr:          getEnv("ELASTICSEARCH_URL", "http://localhost:9200"),
 			KafkaBrokers:    []string{getEnv("KAFKA_BROKERS", "localhost:9092")},
 			KafkaTopic:      getEnv("KAFKA_TOPIC", "container_topic"),
 			KafkaGroupID:    getEnv("KAFKA_GROUP_ID", "container_group_id"),
