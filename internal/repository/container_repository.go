@@ -35,6 +35,7 @@ type IContainerRepository interface {
 	GetNumContainers(ctx context.Context) (int64, error)
 	GetNumRunningContainers(ctx context.Context) (int64, error)
 	GetContainerUptimeRatio(ctx context.Context, startTime, endTime time.Time) (float64, error)
+	GetContainerUptimeDuration(ctx context.Context, startTime, endTime time.Time) (*dto.UptimeDetails, error)
 }
 
 type containerRepository struct {
@@ -297,7 +298,7 @@ func (r *containerRepository) AddContainerStatus(ctx context.Context, id uint, s
 	doc := map[string]interface{}{
 		"id":        id,
 		"status":    status,
-		"timestamp": time.Now().Format(time.RFC3339),
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
 
 	var buf bytes.Buffer
@@ -360,8 +361,8 @@ func (r *containerRepository) GetContainerUptimeRatio(ctx context.Context, start
 		"query": map[string]interface{}{
 			"range": map[string]interface{}{
 				"timestamp": map[string]interface{}{
-					"gte": startTime.Format(time.RFC3339),
-					"lte": endTime.Format(time.RFC3339),
+					"gte": startTime.UTC().Format(time.RFC3339),
+					"lte": endTime.UTC().Format(time.RFC3339),
 				},
 			},
 		},
@@ -456,4 +457,153 @@ func (r *containerRepository) GetContainerUptimeRatio(ctx context.Context, start
 	}
 
 	return ratio, nil
+}
+
+func (r *containerRepository) GetContainerUptimeDuration(ctx context.Context, startTime, endTime time.Time) (*dto.UptimeDetails, error) {
+	if startTime.After(endTime) {
+		r.logger.Error("Start time cannot be after end time", "startTime", startTime, "endTime", endTime)
+		return nil, fmt.Errorf("start time cannot be after end time")
+	}
+
+	query := map[string]interface{}{
+		"size": 0,
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{
+						"range": map[string]interface{}{
+							"timestamp": map[string]interface{}{
+								"gte": startTime.UTC().Format(time.RFC3339),
+								"lte": endTime.UTC().Format(time.RFC3339),
+							},
+						},
+					},
+					{
+						"term": map[string]interface{}{
+							"status.keyword": StatusRunning,
+						},
+					},
+				},
+			},
+		},
+		"aggs": map[string]interface{}{
+			"containers": map[string]interface{}{
+				"terms": map[string]interface{}{
+					"field": "id",
+					"size":  10000,
+				},
+				"aggs": map[string]interface{}{
+					"running_count": map[string]interface{}{
+						"value_count": map[string]interface{}{
+							"field": "id",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(query); err != nil {
+		r.logger.Error("Failed to encode query for Elasticsearch", "error", err)
+		return nil, fmt.Errorf("failed to encode query: %w", err)
+	}
+
+	res, err := r.es.Search(
+		r.es.Search.WithContext(ctx),
+		r.es.Search.WithIndex("container_status"),
+		r.es.Search.WithBody(&buf),
+		r.es.Search.WithTrackTotalHits(true),
+	)
+	if err != nil {
+		r.logger.Error("Failed to execute search", "error", err)
+		return nil, fmt.Errorf("failed to execute search: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		body, _ := io.ReadAll(res.Body)
+		r.logger.Error("Elasticsearch error", "status", res.StatusCode, "body", string(body))
+		return nil, fmt.Errorf("elasticsearch error: %s", res.Status())
+	}
+
+	var response map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		r.logger.Error("Failed to decode response", "error", err)
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	// Extract aggregation results
+	aggregations, ok := response["aggregations"].(map[string]interface{})
+	if !ok {
+		r.logger.Error("Invalid response format: missing aggregations")
+		return nil, fmt.Errorf("invalid response format: missing aggregations")
+	}
+
+	containers, ok := aggregations["containers"].(map[string]interface{})
+	if !ok {
+		r.logger.Error("Invalid response format: missing containers aggregation")
+		return nil, fmt.Errorf("invalid response format: missing containers aggregation")
+	}
+
+	buckets, ok := containers["buckets"].([]interface{})
+	if !ok {
+		r.logger.Error("Invalid response format: missing buckets")
+		return nil, fmt.Errorf("invalid response format: missing buckets")
+	}
+
+	perContainerUptime := make(map[string]time.Duration)
+	var totalUptime time.Duration
+	const minuteDuration = time.Minute
+
+	for _, bucket := range buckets {
+		bucketMap, ok := bucket.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		key, ok := bucketMap["key"]
+		if !ok {
+			continue
+		}
+
+		var containerID string
+		switch keyVal := key.(type) {
+		case float64:
+			containerID = fmt.Sprintf("%d", int(keyVal))
+		case string:
+			containerID = keyVal
+		default:
+			continue
+		}
+
+		runningCount, ok := bucketMap["running_count"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		value, ok := runningCount["value"].(float64)
+		if !ok {
+			continue
+		}
+
+		count := int(value)
+		uptime := time.Duration(count) * minuteDuration
+
+		if count > 0 {
+			perContainerUptime[containerID] = uptime
+			totalUptime += uptime
+		}
+	}
+
+	r.logger.Info("Container uptime calculated successfully using count method",
+		"startTime", startTime,
+		"endTime", endTime,
+		"totalUptime", totalUptime,
+		"containerCount", len(perContainerUptime))
+
+	return &dto.UptimeDetails{
+		TotalUptime:        totalUptime,
+		PerContainerUptime: perContainerUptime,
+	}, nil
 }
