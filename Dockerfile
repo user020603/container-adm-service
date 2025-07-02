@@ -23,6 +23,8 @@ COPY --from=builder /app/kafka-consumer .
 
 COPY config/ ./config/
 
+RUN mkdir -p /app/logs
+
 EXPOSE 8001
 EXPOSE 50051
 

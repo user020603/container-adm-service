@@ -1,7 +1,0 @@
-2025-06-11T08:41:37.472+0700	info	rest/main.go:61	[INFO] Starting REST server	{"port": "8001"}
-2025-06-11T08:51:03.683+0700	info	rest/main.go:71	[INFO] Shutting down server gracefully...
-2025-06-11T08:51:03.684+0700	info	rest/main.go:80	[INFO] REST server exiting
-2025-06-11T08:51:10.692+0700	info	rest/main.go:61	[INFO] Starting REST server	{"port": "8001"}
-2025-06-11T08:51:35.224+0700	info	repository/container_repository.go:274	[INFO] Container retrieved successfully	{"id": 1}
-2025-06-11T08:51:41.234+0700	info	repository/container_repository.go:226	[INFO] Container updated successfully	{"id": 1}
-2025-06-11T08:51:41.234+0700	info	service/container_service.go:140	[INFO] Container updated successfully	{"id": 1, "containerID": "bb96f0b26ed13e358f480bb673452a4b2af34aaab02210de2c8b8363a3fa59c5"}
