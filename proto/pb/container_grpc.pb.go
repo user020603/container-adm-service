@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ContainerAdmService_GetAllContainers_FullMethodName        = "/container_adm_service.ContainerAdmService/GetAllContainers"
-	ContainerAdmService_GetContainerInformation_FullMethodName = "/container_adm_service.ContainerAdmService/GetContainerInformation"
+	ContainerAdmService_GetAllContainers_FullMethodName           = "/container_adm_service.ContainerAdmService/GetAllContainers"
+	ContainerAdmService_GetContainerInformation_FullMethodName    = "/container_adm_service.ContainerAdmService/GetContainerInformation"
+	ContainerAdmService_GetContainerUptimeDuration_FullMethodName = "/container_adm_service.ContainerAdmService/GetContainerUptimeDuration"
 )
 
 // ContainerAdmServiceClient is the client API for ContainerAdmService service.
@@ -29,6 +30,7 @@ const (
 type ContainerAdmServiceClient interface {
 	GetAllContainers(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*ContainerResponse, error)
 	GetContainerInformation(ctx context.Context, in *GetContainerInfomationRequest, opts ...grpc.CallOption) (*GetContainerInfomationResponse, error)
+	GetContainerUptimeDuration(ctx context.Context, in *GetContainerInfomationRequest, opts ...grpc.CallOption) (*GetContainerUptimeDurationResponse, error)
 }
 
 type containerAdmServiceClient struct {
@@ -59,12 +61,23 @@ func (c *containerAdmServiceClient) GetContainerInformation(ctx context.Context,
 	return out, nil
 }
 
+func (c *containerAdmServiceClient) GetContainerUptimeDuration(ctx context.Context, in *GetContainerInfomationRequest, opts ...grpc.CallOption) (*GetContainerUptimeDurationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetContainerUptimeDurationResponse)
+	err := c.cc.Invoke(ctx, ContainerAdmService_GetContainerUptimeDuration_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerAdmServiceServer is the server API for ContainerAdmService service.
 // All implementations must embed UnimplementedContainerAdmServiceServer
 // for forward compatibility.
 type ContainerAdmServiceServer interface {
 	GetAllContainers(context.Context, *EmptyRequest) (*ContainerResponse, error)
 	GetContainerInformation(context.Context, *GetContainerInfomationRequest) (*GetContainerInfomationResponse, error)
+	GetContainerUptimeDuration(context.Context, *GetContainerInfomationRequest) (*GetContainerUptimeDurationResponse, error)
 	mustEmbedUnimplementedContainerAdmServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedContainerAdmServiceServer) GetAllContainers(context.Context, 
 }
 func (UnimplementedContainerAdmServiceServer) GetContainerInformation(context.Context, *GetContainerInfomationRequest) (*GetContainerInfomationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContainerInformation not implemented")
+}
+func (UnimplementedContainerAdmServiceServer) GetContainerUptimeDuration(context.Context, *GetContainerInfomationRequest) (*GetContainerUptimeDurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContainerUptimeDuration not implemented")
 }
 func (UnimplementedContainerAdmServiceServer) mustEmbedUnimplementedContainerAdmServiceServer() {}
 func (UnimplementedContainerAdmServiceServer) testEmbeddedByValue()                             {}
@@ -138,6 +154,24 @@ func _ContainerAdmService_GetContainerInformation_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContainerAdmService_GetContainerUptimeDuration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetContainerInfomationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerAdmServiceServer).GetContainerUptimeDuration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContainerAdmService_GetContainerUptimeDuration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerAdmServiceServer).GetContainerUptimeDuration(ctx, req.(*GetContainerInfomationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContainerAdmService_ServiceDesc is the grpc.ServiceDesc for ContainerAdmService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var ContainerAdmService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetContainerInformation",
 			Handler:    _ContainerAdmService_GetContainerInformation_Handler,
+		},
+		{
+			MethodName: "GetContainerUptimeDuration",
+			Handler:    _ContainerAdmService_GetContainerUptimeDuration_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

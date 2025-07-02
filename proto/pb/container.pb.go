@@ -273,6 +273,126 @@ func (x *GetContainerInfomationResponse) GetMeanUptimeRatio() float32 {
 	return 0
 }
 
+type GetContainerUptimeDurationResponse struct {
+	state                protoimpl.MessageState  `protogen:"open.v1"`
+	NumContainers        int64                   `protobuf:"varint,1,opt,name=numContainers,proto3" json:"numContainers,omitempty"`
+	NumRunningContainers int64                   `protobuf:"varint,2,opt,name=numRunningContainers,proto3" json:"numRunningContainers,omitempty"`
+	NumStoppedContainers int64                   `protobuf:"varint,3,opt,name=numStoppedContainers,proto3" json:"numStoppedContainers,omitempty"`
+	UptimeDetails        *ContainerUptimeDetails `protobuf:"bytes,4,opt,name=uptimeDetails,proto3" json:"uptimeDetails,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *GetContainerUptimeDurationResponse) Reset() {
+	*x = GetContainerUptimeDurationResponse{}
+	mi := &file_proto_container_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetContainerUptimeDurationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetContainerUptimeDurationResponse) ProtoMessage() {}
+
+func (x *GetContainerUptimeDurationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_container_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetContainerUptimeDurationResponse.ProtoReflect.Descriptor instead.
+func (*GetContainerUptimeDurationResponse) Descriptor() ([]byte, []int) {
+	return file_proto_container_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetContainerUptimeDurationResponse) GetNumContainers() int64 {
+	if x != nil {
+		return x.NumContainers
+	}
+	return 0
+}
+
+func (x *GetContainerUptimeDurationResponse) GetNumRunningContainers() int64 {
+	if x != nil {
+		return x.NumRunningContainers
+	}
+	return 0
+}
+
+func (x *GetContainerUptimeDurationResponse) GetNumStoppedContainers() int64 {
+	if x != nil {
+		return x.NumStoppedContainers
+	}
+	return 0
+}
+
+func (x *GetContainerUptimeDurationResponse) GetUptimeDetails() *ContainerUptimeDetails {
+	if x != nil {
+		return x.UptimeDetails
+	}
+	return nil
+}
+
+type ContainerUptimeDetails struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	TotalUptime        int64                  `protobuf:"varint,1,opt,name=totalUptime,proto3" json:"totalUptime,omitempty"`
+	PerContainerUptime map[string]int64       `protobuf:"bytes,2,rep,name=perContainerUptime,proto3" json:"perContainerUptime,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ContainerUptimeDetails) Reset() {
+	*x = ContainerUptimeDetails{}
+	mi := &file_proto_container_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContainerUptimeDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerUptimeDetails) ProtoMessage() {}
+
+func (x *ContainerUptimeDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_container_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerUptimeDetails.ProtoReflect.Descriptor instead.
+func (*ContainerUptimeDetails) Descriptor() ([]byte, []int) {
+	return file_proto_container_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ContainerUptimeDetails) GetTotalUptime() int64 {
+	if x != nil {
+		return x.TotalUptime
+	}
+	return 0
+}
+
+func (x *ContainerUptimeDetails) GetPerContainerUptime() map[string]int64 {
+	if x != nil {
+		return x.PerContainerUptime
+	}
+	return nil
+}
+
 var File_proto_container_proto protoreflect.FileDescriptor
 
 const file_proto_container_proto_rawDesc = "" +
@@ -293,10 +413,22 @@ const file_proto_container_proto_rawDesc = "" +
 	"\rnumContainers\x18\x01 \x01(\x03R\rnumContainers\x122\n" +
 	"\x14numRunningContainers\x18\x02 \x01(\x03R\x14numRunningContainers\x122\n" +
 	"\x14numStoppedContainers\x18\x03 \x01(\x03R\x14numStoppedContainers\x12(\n" +
-	"\x0fmeanUptimeRatio\x18\x04 \x01(\x02R\x0fmeanUptimeRatio2\x81\x02\n" +
+	"\x0fmeanUptimeRatio\x18\x04 \x01(\x02R\x0fmeanUptimeRatio\"\x87\x02\n" +
+	"\"GetContainerUptimeDurationResponse\x12$\n" +
+	"\rnumContainers\x18\x01 \x01(\x03R\rnumContainers\x122\n" +
+	"\x14numRunningContainers\x18\x02 \x01(\x03R\x14numRunningContainers\x122\n" +
+	"\x14numStoppedContainers\x18\x03 \x01(\x03R\x14numStoppedContainers\x12S\n" +
+	"\ruptimeDetails\x18\x04 \x01(\v2-.container_adm_service.ContainerUptimeDetailsR\ruptimeDetails\"\xf8\x01\n" +
+	"\x16ContainerUptimeDetails\x12 \n" +
+	"\vtotalUptime\x18\x01 \x01(\x03R\vtotalUptime\x12u\n" +
+	"\x12perContainerUptime\x18\x02 \x03(\v2E.container_adm_service.ContainerUptimeDetails.PerContainerUptimeEntryR\x12perContainerUptime\x1aE\n" +
+	"\x17PerContainerUptimeEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x012\x91\x03\n" +
 	"\x13ContainerAdmService\x12a\n" +
 	"\x10GetAllContainers\x12#.container_adm_service.EmptyRequest\x1a(.container_adm_service.ContainerResponse\x12\x86\x01\n" +
-	"\x17GetContainerInformation\x124.container_adm_service.GetContainerInfomationRequest\x1a5.container_adm_service.GetContainerInfomationResponseB\fZ\n" +
+	"\x17GetContainerInformation\x124.container_adm_service.GetContainerInfomationRequest\x1a5.container_adm_service.GetContainerInfomationResponse\x12\x8d\x01\n" +
+	"\x1aGetContainerUptimeDuration\x124.container_adm_service.GetContainerInfomationRequest\x1a9.container_adm_service.GetContainerUptimeDurationResponseB\fZ\n" +
 	"./proto/pbb\x06proto3"
 
 var (
@@ -311,25 +443,32 @@ func file_proto_container_proto_rawDescGZIP() []byte {
 	return file_proto_container_proto_rawDescData
 }
 
-var file_proto_container_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_container_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_proto_container_proto_goTypes = []any{
-	(*EmptyRequest)(nil),                   // 0: container_adm_service.EmptyRequest
-	(*ContainerResponse)(nil),              // 1: container_adm_service.ContainerResponse
-	(*ContainerName)(nil),                  // 2: container_adm_service.ContainerName
-	(*GetContainerInfomationRequest)(nil),  // 3: container_adm_service.GetContainerInfomationRequest
-	(*GetContainerInfomationResponse)(nil), // 4: container_adm_service.GetContainerInfomationResponse
+	(*EmptyRequest)(nil),                       // 0: container_adm_service.EmptyRequest
+	(*ContainerResponse)(nil),                  // 1: container_adm_service.ContainerResponse
+	(*ContainerName)(nil),                      // 2: container_adm_service.ContainerName
+	(*GetContainerInfomationRequest)(nil),      // 3: container_adm_service.GetContainerInfomationRequest
+	(*GetContainerInfomationResponse)(nil),     // 4: container_adm_service.GetContainerInfomationResponse
+	(*GetContainerUptimeDurationResponse)(nil), // 5: container_adm_service.GetContainerUptimeDurationResponse
+	(*ContainerUptimeDetails)(nil),             // 6: container_adm_service.ContainerUptimeDetails
+	nil,                                        // 7: container_adm_service.ContainerUptimeDetails.PerContainerUptimeEntry
 }
 var file_proto_container_proto_depIdxs = []int32{
 	2, // 0: container_adm_service.ContainerResponse.containers:type_name -> container_adm_service.ContainerName
-	0, // 1: container_adm_service.ContainerAdmService.GetAllContainers:input_type -> container_adm_service.EmptyRequest
-	3, // 2: container_adm_service.ContainerAdmService.GetContainerInformation:input_type -> container_adm_service.GetContainerInfomationRequest
-	1, // 3: container_adm_service.ContainerAdmService.GetAllContainers:output_type -> container_adm_service.ContainerResponse
-	4, // 4: container_adm_service.ContainerAdmService.GetContainerInformation:output_type -> container_adm_service.GetContainerInfomationResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	6, // 1: container_adm_service.GetContainerUptimeDurationResponse.uptimeDetails:type_name -> container_adm_service.ContainerUptimeDetails
+	7, // 2: container_adm_service.ContainerUptimeDetails.perContainerUptime:type_name -> container_adm_service.ContainerUptimeDetails.PerContainerUptimeEntry
+	0, // 3: container_adm_service.ContainerAdmService.GetAllContainers:input_type -> container_adm_service.EmptyRequest
+	3, // 4: container_adm_service.ContainerAdmService.GetContainerInformation:input_type -> container_adm_service.GetContainerInfomationRequest
+	3, // 5: container_adm_service.ContainerAdmService.GetContainerUptimeDuration:input_type -> container_adm_service.GetContainerInfomationRequest
+	1, // 6: container_adm_service.ContainerAdmService.GetAllContainers:output_type -> container_adm_service.ContainerResponse
+	4, // 7: container_adm_service.ContainerAdmService.GetContainerInformation:output_type -> container_adm_service.GetContainerInfomationResponse
+	5, // 8: container_adm_service.ContainerAdmService.GetContainerUptimeDuration:output_type -> container_adm_service.GetContainerUptimeDurationResponse
+	6, // [6:9] is the sub-list for method output_type
+	3, // [3:6] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proto_container_proto_init() }
@@ -343,7 +482,7 @@ func file_proto_container_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_container_proto_rawDesc), len(file_proto_container_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
