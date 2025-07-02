@@ -10,12 +10,12 @@ import (
 func SetupContainerRoutes(h *rest.RestContainerHandler) *gin.Engine {
 	router := gin.Default()
 
-	router.POST("/container/create", h.CreateContainer)
-	router.GET("/container/view", h.ViewContainers)
-	router.PUT("/container/update/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.UpdateContainer)
-	router.DELETE("/container/delete/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.DeleteContainer)
-	router.POST("/container/import", h.ImportContainers)
-	router.GET("/container/export", h.ExportContainers)
+	router.POST("/create", h.CreateContainer)
+	router.GET("/view", h.ViewContainers)
+	router.PUT("/update/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.UpdateContainer)
+	router.DELETE("/delete/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.DeleteContainer)
+	router.POST("/import", h.ImportContainers)
+	router.GET("/export", h.ExportContainers)
 
 	return router
 }
