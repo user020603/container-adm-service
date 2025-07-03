@@ -10,12 +10,41 @@ import (
 func SetupContainerRoutes(h *rest.RestContainerHandler) *gin.Engine {
 	router := gin.Default()
 
-	router.POST("/create", h.CreateContainer)
-	router.GET("/view", h.ViewContainers)
-	router.PUT("/update/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.UpdateContainer)
-	router.DELETE("/delete/:id", middlewares.JWTAuthMiddleware(), middlewares.AdminOnlyMiddleware(), h.DeleteContainer)
-	router.POST("/import", h.ImportContainers)
-	router.GET("/export", h.ExportContainers)
+	router.POST("/create",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:create"),
+		h.CreateContainer,
+	)
+
+	router.GET("/view",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:read"),
+		h.ViewContainers,
+	)
+
+	router.PUT("/update/:id",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:update"),
+		h.UpdateContainer,
+	)
+
+	router.DELETE("/delete/:id",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:delete"),
+		h.DeleteContainer,
+	)
+
+	router.POST("/import",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:import"),
+		h.ImportContainers,
+	)
+
+	router.GET("/export",
+		middlewares.JWTAuthMiddleware(),
+		middlewares.CheckScopeMiddleware("container:export"),
+		h.ExportContainers,
+	)
 
 	return router
 }
