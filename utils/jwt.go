@@ -10,17 +10,19 @@ import (
 var jwtSecret = []byte(config.LoadConfig().JWTSecret)
 
 type Claims struct {
-	UserID   uint   `json:"user_id"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
+	UserID   uint     `json:"user_id"`
+	Username string   `json:"username"`
+	Role     string   `json:"role"`
+	Scopes   []string `json:"scopes"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uint, username, role string, expiry time.Duration) (string, error) {
+var GenerateJWT = func(userID uint, username, role string, scopes []string, expiry time.Duration) (string, error) {
 	claims := &Claims{
 		UserID:   userID,
 		Username: username,
 		Role:     role,
+		Scopes:   scopes,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
