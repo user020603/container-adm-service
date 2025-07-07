@@ -16,7 +16,7 @@ func SetupContainerRoutes(h *rest.RestContainerHandler) *gin.Engine {
 		h.CreateContainer,
 	)
 
-	router.GET("/view",
+	router.POST("/view",
 		middlewares.JWTAuthMiddleware(),
 		middlewares.CheckScopeMiddleware("container:read"),
 		h.ViewContainers,
@@ -40,7 +40,7 @@ func SetupContainerRoutes(h *rest.RestContainerHandler) *gin.Engine {
 		h.ImportContainers,
 	)
 
-	router.GET("/export",
+	router.POST("/export",
 		middlewares.JWTAuthMiddleware(),
 		middlewares.CheckScopeMiddleware("container:export"),
 		h.ExportContainers,
