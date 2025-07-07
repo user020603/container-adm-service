@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Container Administration API
+  description: API for managing containers with authentication and RBAC
+  version: 1.0.0
+
+servers:
+  - url: http://localhost/api/container-adm
+
+paths:
+  /create:
+    post:
+      summary: Create a new container
+      tags: [Containers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContainerRequest"
+      responses:
+        "201":
+          description: Successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Container"
+        "400":
+          description: Invalid input
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: []
+
+  /view:
+    post:
+      summary: View all containers with filters, pagination, and sorting
+      tags: [Containers]
+      parameters:
+        - name: from
+          in: query
+          description: Index of the first item to return
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+        - name: to
+          in: query
+          description: Index of the last item to return
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            example: 4
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            enum: [id, container_name, status, image_name]
+            example: id
+        - name: sortOrder
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: asc
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContainerFilter"
+      responses:
+        "200":
+          description: List of containers matching filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Container"
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: []
+
+  /update/{id}:
+    put:
+      summary: Update a container by ID
+      tags: [Containers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContainerRequest"
+      responses:
+        "200":
+          description: Updated successfully
+        "400":
+          description: Invalid ID or input
+        "401":
+          description: Unauthorized
+        "404":
+          description: Container not found
+      security:
+        - bearerAuth: []
+
+  /delete/{id}:
+    delete:
+      summary: Delete a container by ID
+      tags: [Containers]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted successfully
+        "401":
+          description: Unauthorized
+        "404":
+          description: Container not found
+      security:
+        - bearerAuth: []
+
+  /import:
+    post:
+      summary: Import containers from a file
+      tags: [Containers]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Imported successfully
+        "400":
+          description: Invalid file
+      security:
+        - bearerAuth: []
+
+  /export:
+    post:
+      summary: Export containers as a file
+      tags: [Containers]
+      parameters:
+        - name: from
+          in: query
+          description: Index of the first item to export
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+        - name: to
+          in: query
+          description: Index of the last item to export
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            example: 100
+        - name: sortBy
+          in: query
+          description: Field to sort by
+          required: false
+          schema:
+            type: string
+            enum: [id, container_name, status, image_name]
+            example: id
+        - name: sortOrder
+          in: query
+          description: Sort direction
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            example: asc
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContainerFilter"
+      responses:
+        "200":
+          description: Exported container data as Excel file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid input (filters, range, sort)
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error or nil export data
+      security:
+        - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateContainerRequest:
+      type: object
+      required:
+        - container_name
+        - image_name
+      properties:
+        container_name:
+          type: string
+          example: "nginx-container-1"
+        image_name:
+          type: string
+          example: "nginx:latest"
+
+    ContainerFilter:
+      type: object
+      properties:
+        container_id:
+          type: string
+          example: "abc123"
+        container_name:
+          type: string
+          example: "nginx-container-1"
+        image_name:
+          type: string
+          example: "nginx:latest"
+        status:
+          type: string
+          enum: [running, stopped]
+          example: "running"
+
+    UpdateContainerRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [running, stopped]
+          example: "running"
+
+    Container:
+      type: object
+      properties:
+        id:
+          type: integer
+        container_name:
+          type: string
+        status:
+          type: string
+          enum: [running, stopped]
