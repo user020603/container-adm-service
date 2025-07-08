@@ -9,10 +9,11 @@ import (
 	"strings"
 	"thanhnt208/container-adm-service/internal/dto"
 	"thanhnt208/container-adm-service/internal/model"
+	"thanhnt208/container-adm-service/pkg/esclient"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"time"
 
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/esapi"
 	"gorm.io/gorm"
 )
 
@@ -40,11 +41,11 @@ type IContainerRepository interface {
 
 type containerRepository struct {
 	db     *gorm.DB
-	es     *elasticsearch.Client
+	es     esclient.ElasticsearchClient
 	logger logger.ILogger
 }
 
-func NewContainerRepository(db *gorm.DB, es *elasticsearch.Client, logger logger.ILogger) IContainerRepository {
+func NewContainerRepository(db *gorm.DB, es esclient.ElasticsearchClient, logger logger.ILogger) IContainerRepository {
 	return &containerRepository{
 		db:     db,
 		es:     es,
@@ -300,31 +301,31 @@ func (r *containerRepository) AddContainerStatus(ctx context.Context, id uint, s
 		"status":    status,
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 	}
-
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(doc); err != nil {
 		r.logger.Error("Failed to encode document for Elasticsearch", "error", err)
-		return fmt.Errorf("failed to encode document for Elasticsearch: %w", err)
+		return fmt.Errorf("encode error: %w", err)
 	}
 
-	res, err := r.es.Index(
-		"container_status",
-		&buf,
-		r.es.Index.WithContext(ctx),
-	)
+	req := esapi.IndexRequest{
+		Index:   "container_status",
+		Body:    &buf,
+		Refresh: "true",
+	}
+	res, err := r.es.Do(ctx, req)
 	if err != nil {
-		r.logger.Error("Failed to index document in Elasticsearch", "error", err)
-		return fmt.Errorf("failed to index document in Elasticsearch: %w", err)
+		r.logger.Error("ES index request failed", "error", err)
+		return fmt.Errorf("index request failed: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		body, _ := io.ReadAll(res.Body)
-		r.logger.Error("Elasticsearch response error", "status", res.StatusCode, "body", string(body))
-		return fmt.Errorf("elasticsearch response error: %s", res.Status())
+		r.logger.Error("Elasticsearch response error", "status", res.Status(), "body", string(body))
+		return fmt.Errorf("elasticsearch error: %s", res.Status())
 	}
 
-	r.logger.Info("Container status added successfully", "id", id, "status", status)
+	r.logger.Info("Container status indexed", "id", id, "status", status)
 	return nil
 }
 
@@ -406,57 +407,37 @@ func (r *containerRepository) GetContainerUptimeRatio(ctx context.Context, start
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		r.logger.Error("Failed to encode query for Elasticsearch", "error", err, "startTime", startTime, "endTime", endTime)
-		return 0, fmt.Errorf("failed to encode query: %w", err)
+		r.logger.Error("Failed to encode search query", "error", err)
+		return 0, fmt.Errorf("encode error: %w", err)
 	}
 
-	res, err := r.es.Search(
-		r.es.Search.WithContext(ctx),
-		r.es.Search.WithIndex("container_status"),
-		r.es.Search.WithBody(&buf),
-		r.es.Search.WithTrackTotalHits(true),
-	)
+	req := esapi.SearchRequest{
+		Index:          []string{"container_status"},
+		Body:           &buf,
+		TrackTotalHits: esapi.BoolPtr(true),
+	}
+	res, err := r.es.Do(ctx, req)
 	if err != nil {
-		return 0, fmt.Errorf("failed to execute search: %w", err)
+		r.logger.Error("ES search request failed", "error", err)
+		return 0, err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		body, _ := io.ReadAll(res.Body)
-		r.logger.Error("Elasticsearch error", "status", res.StatusCode, "body", string(body))
-		return 0, fmt.Errorf("elasticsearch error: %s", res.Status())
+		r.logger.Error("Elasticsearch search error", "status", res.Status(), "body", string(body))
+		return 0, fmt.Errorf("search error: %s", res.Status())
 	}
 
-	var response map[string]interface{}
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-		return 0, fmt.Errorf("failed to decode response: %w", err)
+	var resp map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
+		r.logger.Error("Failed to decode ES search response", "error", err)
+		return 0, fmt.Errorf("decode error: %w", err)
 	}
 
-	aggregations, ok := response["aggregations"].(map[string]interface{})
-	if !ok {
-		r.logger.Error("Elasticsearch response missing 'aggregations' field or not a map", "response", response)
-		return 0, fmt.Errorf("elasticsearch response missing 'aggregations' field")
-	}
-
-	avgRatio, ok := aggregations["avg_ratio"].(map[string]interface{})
-	if !ok {
-		r.logger.Error("Elasticsearch response missing 'avg_ratio' field in aggregations", "aggregations", aggregations)
-		return 0, fmt.Errorf("elasticsearch response missing 'avg_ratio' field")
-	}
-
-	value, ok := avgRatio["value"]
-	if !ok || value == nil {
-		r.logger.Warn("Elasticsearch response 'avg_ratio' value is nil or missing", "avg_ratio", avgRatio)
-		return 0, fmt.Errorf("elasticsearch response 'avg_ratio' value is nil or missing")
-	}
-
-	ratio, ok := value.(float64)
-	if !ok {
-		r.logger.Error("Elasticsearch response 'avg_ratio' value is not a float64", "value", value)
-		return 0, fmt.Errorf("elasticsearch response 'avg_ratio' value is not a float64")
-	}
-
-	return ratio, nil
+	aggs := resp["aggregations"].(map[string]interface{})
+	avg := aggs["avg_ratio"].(map[string]interface{})["value"].(float64)
+	return avg, nil
 }
 
 func (r *containerRepository) GetContainerUptimeDuration(ctx context.Context, startTime, endTime time.Time) (*dto.UptimeDetails, error) {
@@ -504,106 +485,40 @@ func (r *containerRepository) GetContainerUptimeDuration(ctx context.Context, st
 	}
 
 	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(query); err != nil {
-		r.logger.Error("Failed to encode query for Elasticsearch", "error", err)
-		return nil, fmt.Errorf("failed to encode query: %w", err)
-	}
+	_ = json.NewEncoder(&buf).Encode(query)
 
-	res, err := r.es.Search(
-		r.es.Search.WithContext(ctx),
-		r.es.Search.WithIndex("container_status"),
-		r.es.Search.WithBody(&buf),
-		r.es.Search.WithTrackTotalHits(true),
-	)
+	req := esapi.SearchRequest{
+		Index:          []string{"container_status"},
+		Body:           &buf,
+		TrackTotalHits: esapi.BoolPtr(true),
+	}
+	res, err := r.es.Do(ctx, req)
 	if err != nil {
-		r.logger.Error("Failed to execute search", "error", err)
-		return nil, fmt.Errorf("failed to execute search: %w", err)
+		r.logger.Error("ES search request failed", "error", err)
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	if res.IsError() {
 		body, _ := io.ReadAll(res.Body)
-		r.logger.Error("Elasticsearch error", "status", res.StatusCode, "body", string(body))
-		return nil, fmt.Errorf("elasticsearch error: %s", res.Status())
+		r.logger.Error("Elasticsearch search error", "status", res.Status(), "body", string(body))
+		return nil, fmt.Errorf("search error: %s", res.Status())
 	}
 
-	var response map[string]interface{}
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-		r.logger.Error("Failed to decode response", "error", err)
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	var resp map[string]interface{}
+	_ = json.NewDecoder(res.Body).Decode(&resp)
+
+	buckets := resp["aggregations"].(map[string]interface{})["containers"].(map[string]interface{})["buckets"].([]interface{})
+	per := make(map[string]time.Duration)
+	var total time.Duration
+	for _, b := range buckets {
+		m := b.(map[string]interface{})
+		key := fmt.Sprintf("%v", m["key"])
+		cnt := int(m["running_count"].(map[string]interface{})["value"].(float64))
+		dur := time.Duration(cnt) * time.Minute
+		per[key] = dur
+		total += dur
 	}
 
-	// Extract aggregation results
-	aggregations, ok := response["aggregations"].(map[string]interface{})
-	if !ok {
-		r.logger.Error("Invalid response format: missing aggregations")
-		return nil, fmt.Errorf("invalid response format: missing aggregations")
-	}
-
-	containers, ok := aggregations["containers"].(map[string]interface{})
-	if !ok {
-		r.logger.Error("Invalid response format: missing containers aggregation")
-		return nil, fmt.Errorf("invalid response format: missing containers aggregation")
-	}
-
-	buckets, ok := containers["buckets"].([]interface{})
-	if !ok {
-		r.logger.Error("Invalid response format: missing buckets")
-		return nil, fmt.Errorf("invalid response format: missing buckets")
-	}
-
-	perContainerUptime := make(map[string]time.Duration)
-	var totalUptime time.Duration
-	const minuteDuration = time.Minute
-
-	for _, bucket := range buckets {
-		bucketMap, ok := bucket.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		key, ok := bucketMap["key"]
-		if !ok {
-			continue
-		}
-
-		var containerID string
-		switch keyVal := key.(type) {
-		case float64:
-			containerID = fmt.Sprintf("%d", int(keyVal))
-		case string:
-			containerID = keyVal
-		default:
-			continue
-		}
-
-		runningCount, ok := bucketMap["running_count"].(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		value, ok := runningCount["value"].(float64)
-		if !ok {
-			continue
-		}
-
-		count := int(value)
-		uptime := time.Duration(count) * minuteDuration
-
-		if count > 0 {
-			perContainerUptime[containerID] = uptime
-			totalUptime += uptime
-		}
-	}
-
-	r.logger.Info("Container uptime calculated successfully using count method",
-		"startTime", startTime,
-		"endTime", endTime,
-		"totalUptime", totalUptime,
-		"containerCount", len(perContainerUptime))
-
-	return &dto.UptimeDetails{
-		TotalUptime:        totalUptime,
-		PerContainerUptime: perContainerUptime,
-	}, nil
+	return &dto.UptimeDetails{TotalUptime: total, PerContainerUptime: per}, nil
 }
