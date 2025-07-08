@@ -5,6 +5,7 @@ go 1.24.1
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/docker/docker v28.2.2+incompatible
+	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/elastic/go-elasticsearch/v8 v8.18.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-redis/redismock/v9 v9.2.0
