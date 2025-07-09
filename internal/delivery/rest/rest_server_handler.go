@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	MaxRangeLimit     = 1000             // Maximum range limit for pagination
+	MaxRangeLimit     = 100             // Maximum range limit for pagination
 	MaxFileSize       = 10 * 1024 * 1024 // Maximum file size for import (10 MB)
 	SupportedFileType = ".xlsx"          // Supported file type for import
 )
