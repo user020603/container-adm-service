@@ -13,6 +13,7 @@ import (
 	"thanhnt208/container-adm-service/internal/delivery/rest"
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
+	esclient "thanhnt208/container-adm-service/pkg/esclient"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"time"
 )
@@ -33,11 +34,13 @@ func main() {
 	defer postgresDB.Close()
 
 	elasticsearchClient := infrastructure.NewElasticsearch(cfg)
-	esClient, err := elasticsearchClient.ConnectElasticsearch()
+	esRawClient, err := elasticsearchClient.ConnectElasticsearch()
 	if err != nil {
 		log.Error("Failed to connect to Elasticsearch", "error", err)
 		panic("Failed to connect to Elasticsearch: " + err.Error())
 	}
+
+	esClient := &esclient.RealESClient{Client: esRawClient}
 
 	dockerClient, err := client.NewDockerClient()
 	if err != nil {
