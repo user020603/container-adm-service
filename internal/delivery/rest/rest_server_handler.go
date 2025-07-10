@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	MaxRangeLimit     = 100             // Maximum range limit for pagination
+	MaxRangeLimit     = 100              // Maximum range limit for pagination
 	MaxFileSize       = 10 * 1024 * 1024 // Maximum file size for import (10 MB)
 	SupportedFileType = ".xlsx"          // Supported file type for import
 )
@@ -21,6 +21,15 @@ const (
 type RestContainerHandler struct {
 	service service.IContainerService
 	logger  logger.ILogger
+}
+
+type IContainerHandler interface {
+	CreateContainer(c *gin.Context)
+	ViewContainers(c *gin.Context)
+	UpdateContainer(c *gin.Context)
+	DeleteContainer(c *gin.Context)
+	ImportContainers(c *gin.Context)
+	ExportContainers(c *gin.Context)
 }
 
 func NewRestServerHandler(service service.IContainerService, logger logger.ILogger) *RestContainerHandler {
