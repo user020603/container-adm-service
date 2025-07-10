@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -6,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
 	"thanhnt208/container-adm-service/api/routes"
 	"thanhnt208/container-adm-service/config"
 	"thanhnt208/container-adm-service/external/client"
@@ -14,21 +17,27 @@ import (
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
-	"time"
 )
 
 func main() {
+	if err := Run(); err != nil {
+		panic("Application failed: " + err.Error())
+	}
+}
+
+var Run = func() error {
 	cfg := config.LoadConfig()
+
 	log, err := logger.NewLogger(cfg.LogLevel, cfg.LogFile)
 	if err != nil {
-		panic("Failed to initialize logger: " + err.Error())
+		return err
 	}
 
 	postgresDB := infrastructure.NewDatabase(cfg)
 	db, err := postgresDB.ConnectDB()
 	if err != nil {
 		log.Error("Failed to connect to the database", "error", err)
-		panic("Failed to connect to the database: " + err.Error())
+		return err
 	}
 	defer postgresDB.Close()
 
@@ -36,7 +45,7 @@ func main() {
 	esRawClient, err := elasticsearchClient.ConnectElasticsearch()
 	if err != nil {
 		log.Error("Failed to connect to Elasticsearch", "error", err)
-		panic("Failed to connect to Elasticsearch: " + err.Error())
+		return err
 	}
 
 	esClient := &client.RealESClient{Client: esRawClient}
@@ -44,7 +53,7 @@ func main() {
 	dockerClient, err := client.NewDockerClient()
 	if err != nil {
 		log.Error("Failed to create Docker client", "error", err)
-		panic("Failed to create Docker client: " + err.Error())
+		return err
 	}
 
 	containerRepository := repository.NewContainerRepository(db, esClient, log)
@@ -53,14 +62,13 @@ func main() {
 
 	r := routes.SetupContainerRoutes(containerRestHandler)
 
-	port := cfg.ServerPort
 	srv := &http.Server{
-		Addr:    ":" + port,
+		Addr:    ":" + cfg.ServerPort,
 		Handler: r,
 	}
 
 	go func() {
-		log.Info("Starting REST server", "port", port)
+		log.Info("Starting REST server", "port", cfg.ServerPort)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error("Failed to start server", "error", err)
 			panic("Failed to start server: " + err.Error())
@@ -70,6 +78,7 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+
 	log.Info("Shutting down server gracefully...")
 
 	ctxShutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -77,7 +86,9 @@ func main() {
 
 	if err := srv.Shutdown(ctxShutdown); err != nil {
 		log.Fatal("REST server forced to shutdown:", "error", err)
+		return err
 	}
 
 	log.Info("REST server exiting")
+	return nil
 }
