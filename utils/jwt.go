@@ -32,7 +32,7 @@ var GenerateJWT = func(userID uint, username, role string, scopes []string, expi
 	return token.SignedString(jwtSecret)
 }
 
-func ParseJWT(tokenStr string) (*Claims, error) {
+var ParseJWT = func(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
