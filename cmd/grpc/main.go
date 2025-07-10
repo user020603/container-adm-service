@@ -19,6 +19,12 @@ import (
 )
 
 func main() {
+	if err := Run(); err != nil {
+		panic("Application failed: " + err.Error())
+	}
+}
+
+var Run = func() error {
 	cfg := config.LoadConfig()
 	log, err := logger.NewLogger(cfg.LogLevel, cfg.LogFile)
 	if err != nil {
@@ -53,7 +59,7 @@ func main() {
 
 	grpcPort := cfg.GrpcPort
 	log.Info("Starting gRPC server", "port", grpcPort)
-
+	
 	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
 		log.Error("Failed to listen on port", "port", grpcPort, "error", err)
@@ -78,4 +84,6 @@ func main() {
 	log.Info("Shutting down gRPC server...")
 	grpcServer.GracefulStop()
 	log.Info("gRPC server exiting")
+
+	return nil
 }
