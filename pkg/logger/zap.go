@@ -29,7 +29,7 @@ type Logger struct {
 	zap *zap.SugaredLogger
 }
 
-func NewLogger(level string, logFile string) (ILogger, error) {
+var NewLogger = func(level string, logFile string) (ILogger, error) {
 	once.Do(func() {
 		encoderConfig := zap.NewProductionEncoderConfig()
 		encoderConfig.TimeKey = "timestamp"
