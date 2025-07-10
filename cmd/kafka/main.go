@@ -11,7 +11,6 @@ import (
 	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
-	esclient "thanhnt208/container-adm-service/pkg/esclient"
 	"thanhnt208/container-adm-service/pkg/logger"
 
 	"golang.org/x/net/context"
@@ -37,7 +36,7 @@ func main() {
 
 	elasticsearchClient := infrastructure.NewElasticsearch(cfg)
 	esRawClient, err := elasticsearchClient.ConnectElasticsearch()
-	esClient := &esclient.RealESClient{Client: esRawClient}
+	esClient := &client.RealESClient{Client: esRawClient}
 	if err != nil {
 		log.Error("Failed to connect to Elasticsearch", "error", err)
 		panic("Failed to connect to Elasticsearch: " + err.Error())

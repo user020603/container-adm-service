@@ -13,7 +13,6 @@ import (
 	"thanhnt208/container-adm-service/internal/delivery/rest"
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
-	esclient "thanhnt208/container-adm-service/pkg/esclient"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"time"
 )
@@ -40,7 +39,7 @@ func main() {
 		panic("Failed to connect to Elasticsearch: " + err.Error())
 	}
 
-	esClient := &esclient.RealESClient{Client: esRawClient}
+	esClient := &client.RealESClient{Client: esRawClient}
 
 	dockerClient, err := client.NewDockerClient()
 	if err != nil {

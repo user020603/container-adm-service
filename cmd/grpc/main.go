@@ -14,7 +14,6 @@ import (
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"thanhnt208/container-adm-service/proto/pb"
-	esclient "thanhnt208/container-adm-service/pkg/esclient"
 
 	grpcServer "google.golang.org/grpc"
 )
@@ -40,7 +39,7 @@ func main() {
 		log.Error("Failed to connect to Elasticsearch", "error", err)
 		panic("Failed to connect to Elasticsearch: " + err.Error())
 	}
-	esClient := &esclient.RealESClient{Client: esRawClient}
+	esClient := &client.RealESClient{Client: esRawClient}
 
 	dockerClient, err := client.NewDockerClient()
 	if err != nil {
