@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"thanhnt208/container-adm-service/internal/service"
-	"thanhnt208/container-adm-service/pkg/kafkaClient"
+	"thanhnt208/container-adm-service/pkg/kafkaclient"
 	"thanhnt208/container-adm-service/pkg/logger"
 
 	"github.com/segmentio/kafka-go"
@@ -13,10 +13,10 @@ import (
 type KafkaConsumerHandler struct {
 	service service.IContainerService
 	logger  logger.ILogger
-	reader  kafkaClient.IKafkaReader
+	reader  kafkaclient.IKafkaReader
 }
 
-func NewKafkaConsumerHandler(service service.IContainerService, logger logger.ILogger, reader kafkaClient.IKafkaReader) *KafkaConsumerHandler {
+func NewKafkaConsumerHandler(service service.IContainerService, logger logger.ILogger, reader kafkaclient.IKafkaReader) *KafkaConsumerHandler {
 	return &KafkaConsumerHandler{
 		service: service,
 		logger:  logger,
