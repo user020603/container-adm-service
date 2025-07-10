@@ -14,7 +14,7 @@ type Database struct {
 	cfg *config.Config
 }
 
-func NewDatabase(cfg *config.Config) IDatabase {
+var NewDatabase = func(cfg *config.Config) IDatabase {
 	return &Database{
 		cfg: cfg,
 	}

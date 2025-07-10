@@ -12,7 +12,7 @@ type Elasticsearch struct {
 	cfg    *config.Config
 }
 
-func NewElasticsearch(cfg *config.Config) IElasticsearch {
+var NewElasticsearch = func(cfg *config.Config) IElasticsearch {
 	return &Elasticsearch{
 		cfg: cfg,
 	}
