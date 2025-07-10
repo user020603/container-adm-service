@@ -15,7 +15,7 @@ type Kafka struct {
 	cfg     *config.Config
 }
 
-func NewKafka(cfg *config.Config) IKafka {
+var NewKafka = func(cfg *config.Config) IKafka {
 	return &Kafka{
 		brokers: cfg.KafkaBrokers,
 		cfg:     cfg,
