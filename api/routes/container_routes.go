@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupContainerRoutes(h *rest.RestContainerHandler) *gin.Engine {
+func SetupContainerRoutes(h rest.IContainerHandler) *gin.Engine {
 	router := gin.Default()
 
 	router.POST("/create",
