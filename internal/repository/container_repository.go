@@ -9,7 +9,7 @@ import (
 	"strings"
 	"thanhnt208/container-adm-service/internal/dto"
 	"thanhnt208/container-adm-service/internal/model"
-	"thanhnt208/container-adm-service/pkg/esclient"
+	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"time"
 
@@ -41,11 +41,11 @@ type IContainerRepository interface {
 
 type containerRepository struct {
 	db     *gorm.DB
-	es     esclient.ElasticsearchClient
+	es     client.ElasticsearchClient
 	logger logger.ILogger
 }
 
-func NewContainerRepository(db *gorm.DB, es esclient.ElasticsearchClient, logger logger.ILogger) IContainerRepository {
+func NewContainerRepository(db *gorm.DB, es client.ElasticsearchClient, logger logger.ILogger) IContainerRepository {
 	return &containerRepository{
 		db:     db,
 		es:     es,
