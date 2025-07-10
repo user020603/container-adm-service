@@ -8,15 +8,31 @@ import (
 	"thanhnt208/container-adm-service/config"
 	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/infrastructure"
-	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
+	"thanhnt208/container-adm-service/internal/delivery/kafka"
 	"thanhnt208/container-adm-service/internal/repository"
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
 
 	"golang.org/x/net/context"
+	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
 )
 
 func main() {
+	if err := Run(); err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+}
+
+var newKafkaConsumerHandler = func(
+	svc service.IContainerService,
+	log logger.ILogger,
+	reader client.IKafkaReader,
+) kafka.IKafkaConsumerHandler {
+	return kafkaHandler.NewKafkaConsumerHandler(svc, log, reader)
+}
+
+var Run = func() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -57,7 +73,7 @@ func main() {
 
 	containerRepository := repository.NewContainerRepository(db, esClient, log)
 	containerService := service.NewContainerService(containerRepository, log, dockerClient)
-	kafkaConsumerHandler := kafkaHandler.NewKafkaConsumerHandler(containerService, log, kafkaConsumer)
+	kafkaConsumerHandler := newKafkaConsumerHandler(containerService, log, kafkaConsumer)
 
 	consumerDone := make(chan error, 1)
 
@@ -103,4 +119,5 @@ func main() {
 	}
 
 	log.Info("Service shutdown complete")
+	return nil
 }
