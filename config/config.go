@@ -34,7 +34,7 @@ var (
 	once           sync.Once
 )
 
-func LoadConfig() *Config {
+var LoadConfig = func() *Config {
 	once.Do(func() {
 		_ = godotenv.Load()
 
