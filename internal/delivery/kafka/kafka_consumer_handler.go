@@ -10,19 +10,26 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+type IKafkaConsumerHandler interface {
+	StartConsume(ctx context.Context) error
+	Close() error
+}
+
 type KafkaConsumerHandler struct {
 	service service.IContainerService
 	logger  logger.ILogger
 	reader  client.IKafkaReader
 }
 
-func NewKafkaConsumerHandler(service service.IContainerService, logger logger.ILogger, reader client.IKafkaReader) *KafkaConsumerHandler {
+var NewKafkaConsumerHandler = func(service service.IContainerService, logger logger.ILogger, reader client.IKafkaReader) IKafkaConsumerHandler {
 	return &KafkaConsumerHandler{
 		service: service,
 		logger:  logger,
 		reader:  reader,
 	}
 }
+
+var _ IKafkaConsumerHandler = (*KafkaConsumerHandler)(nil)
 
 func (h *KafkaConsumerHandler) StartConsume(ctx context.Context) error {
 	for {
