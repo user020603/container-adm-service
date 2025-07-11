@@ -14,22 +14,15 @@ import (
 	"thanhnt208/container-adm-service/pkg/logger"
 
 	"golang.org/x/net/context"
-	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
 )
+
+var newKafkaConsumerHandler = kafka.NewKafkaConsumerHandler
 
 func main() {
 	if err := Run(); err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error running the kafka:", err)
 		os.Exit(1)
 	}
-}
-
-var newKafkaConsumerHandler = func(
-	svc service.IContainerService,
-	log logger.ILogger,
-	reader client.IKafkaReader,
-) kafka.IKafkaConsumerHandler {
-	return kafkaHandler.NewKafkaConsumerHandler(svc, log, reader)
 }
 
 var Run = func() error {
@@ -73,7 +66,7 @@ var Run = func() error {
 
 	containerRepository := repository.NewContainerRepository(db, esClient, log)
 	containerService := service.NewContainerService(containerRepository, log, dockerClient)
-	kafkaConsumerHandler := newKafkaConsumerHandler(containerService, log, kafkaConsumer)
+	kafkaConsumerHandler := kafka.NewKafkaConsumerHandler(containerService, log, kafkaConsumer)
 
 	consumerDone := make(chan error, 1)
 
@@ -119,5 +112,6 @@ var Run = func() error {
 	}
 
 	log.Info("Service shutdown complete")
+
 	return nil
 }
