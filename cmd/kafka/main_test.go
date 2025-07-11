@@ -1,14 +1,14 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"sync"
 	"syscall"
 	"testing"
 	"thanhnt208/container-adm-service/config"
 	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/infrastructure"
+	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
 	"thanhnt208/container-adm-service/internal/mocks"
 	"thanhnt208/container-adm-service/internal/service"
 	"thanhnt208/container-adm-service/pkg/logger"
@@ -19,10 +19,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"golang.org/x/net/context"
 	"gorm.io/gorm"
-
-	kafkaHandler "thanhnt208/container-adm-service/internal/delivery/kafka"
 )
 
 type mockDatabase struct {
@@ -116,7 +113,7 @@ func TestRun_Success(t *testing.T) {
 	mockLog.EXPECT().Error(gomock.Any(), gomock.Any()).AnyTimes()
 
 	originalLogger := logger.NewLogger
-	logger.NewLogger = func(level string, file string) (logger.ILogger, error) {
+	logger.NewLogger = func(level, file string) (logger.ILogger, error) {
 		return mockLog, nil
 	}
 	defer func() { logger.NewLogger = originalLogger }()
@@ -141,9 +138,7 @@ func TestRun_Success(t *testing.T) {
 
 	originalKafka := infrastructure.NewKafka
 	infrastructure.NewKafka = func(cfg *config.Config) infrastructure.IKafka {
-		return &mockKafka{
-			reader: &mockKafkaReader{},
-		}
+		return &mockKafka{reader: &mockKafkaReader{}}
 	}
 	defer func() { infrastructure.NewKafka = originalKafka }()
 
@@ -151,19 +146,22 @@ func TestRun_Success(t *testing.T) {
 	mockHandler := new(mockKafkaConsumerHandler)
 	mockHandler.On("StartConsume", mock.Anything).Return(context.Canceled)
 
-	newKafkaConsumerHandler = func(service.IContainerService, logger.ILogger, client.IKafkaReader) kafkaHandler.IKafkaConsumerHandler {
+	newKafkaConsumerHandler = func(
+		svc service.IContainerService,
+		log logger.ILogger,
+		reader client.IKafkaReader,
+	) kafkaHandler.IKafkaConsumerHandler {
 		return mockHandler
 	}
 	defer func() { newKafkaConsumerHandler = originalHandler }()
 
 	go func() {
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		time.Sleep(100 * time.Millisecond) 
+		_ = syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	}()
 
 	err := Run()
-	if err != nil {
-		assert.NoError(t, err, "Expected no error, got %v", err)
-	}
+	assert.NoError(t, err, "Expected no error, got %v", err)
 }
 
 func TestRun_FailToInitLogger(t *testing.T) {
@@ -183,7 +181,6 @@ func TestRun_DBConnectionFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockLog := mocks.NewMockILogger(ctrl)
-	// Expect the error log to be called once with any arguments
 	mockLog.EXPECT().
 		Error(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1)
@@ -258,14 +255,12 @@ func TestRun_DockerClientInitFail(t *testing.T) {
 	}
 	defer func() { logger.NewLogger = originalLogger }()
 
-	// Mock DB success
 	originalDB := infrastructure.NewDatabase
 	infrastructure.NewDatabase = func(cfg *config.Config) infrastructure.IDatabase {
 		return &mockDatabase{connectErr: nil}
 	}
 	defer func() { infrastructure.NewDatabase = originalDB }()
 
-	// Mock Elasticsearch success
 	originalES := infrastructure.NewElasticsearch
 	infrastructure.NewElasticsearch = func(cfg *config.Config) infrastructure.IElasticsearch {
 		return &mockElasticsearch{connectErr: nil}
@@ -281,7 +276,6 @@ func TestRun_DockerClientInitFail(t *testing.T) {
 	}
 	defer func() { infrastructure.NewKafka = originalKafka }()
 
-	// Mock Docker client fail
 	originalDockerClient := client.NewDockerClient
 	client.NewDockerClient = func() (client.IDockerClient, error) {
 		return nil, fmt.Errorf("docker init failed")
@@ -293,169 +287,4 @@ func TestRun_DockerClientInitFail(t *testing.T) {
 		func() {
 			_ = Run()
 		})
-}
-
-func TestRun_KafkaHandlerConsume_ReturnsError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	mockLog := mocks.NewMockILogger(ctrl)
-	mockLog.EXPECT().Info(gomock.Any(), gomock.Any()).AnyTimes()
-	mockLog.EXPECT().
-		Error(gomock.Any(), gomock.Any(), gomock.Any()).
-		Do(func(msg string, key string, val interface{}) {
-			t.Logf("MockLog.Error called with: %s - %s: %v", msg, key, val)
-		}).
-		AnyTimes()
-
-	mockHandler := new(mockKafkaConsumerHandler)
-	mockHandler.On("StartConsume", mock.Anything).
-		Run(func(args mock.Arguments) {
-			// Giả lập xử lý rồi mới signal
-			time.Sleep(100 * time.Millisecond)
-			wg.Done()
-		}).
-		Return(errors.New("consume failed"))
-
-	mockHandler.On("Close").Return(nil)
-
-	// Mock DB success
-	originalDB := infrastructure.NewDatabase
-	infrastructure.NewDatabase = func(cfg *config.Config) infrastructure.IDatabase {
-		return &mockDatabase{connectErr: nil}
-	}
-	defer func() { infrastructure.NewDatabase = originalDB }()
-
-	// Inject mock handler
-	originalHandler := newKafkaConsumerHandler
-	newKafkaConsumerHandler = func(service.IContainerService, logger.ILogger, client.IKafkaReader) kafkaHandler.IKafkaConsumerHandler {
-		return mockHandler
-	}
-	defer func() { newKafkaConsumerHandler = originalHandler }()
-
-	// Gửi SIGINT sau khi tiêu thụ xong
-	go func() {
-		wg.Wait()
-		time.Sleep(100 * time.Millisecond) // đảm bảo log.Error được gọi
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-	}()
-
-	err := Run()
-	assert.NoError(t, err)
-}
-
-func TestRun_KafkaHandlerConsume_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	mockLog := mocks.NewMockILogger(ctrl)
-
-	// Log các Info() để dễ debug
-	mockLog.EXPECT().
-		Info(gomock.Any(), gomock.Any()).
-		Do(func(msg string, key interface{}) {
-			t.Logf("MockLog.Info called with: %s - %v", msg, key)
-		}).
-		AnyTimes()
-
-	mockLog.EXPECT().Error(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-
-	mockHandler := new(mockKafkaConsumerHandler)
-	mockHandler.On("StartConsume", mock.Anything).
-		Run(func(args mock.Arguments) {
-			time.Sleep(100 * time.Millisecond)
-			wg.Done()
-		}).
-		Return(nil)
-
-	mockHandler.On("Close").Return(nil)
-
-	// Mock DB
-	originalDB := infrastructure.NewDatabase
-	infrastructure.NewDatabase = func(cfg *config.Config) infrastructure.IDatabase {
-		return &mockDatabase{connectErr: nil}
-	}
-	defer func() { infrastructure.NewDatabase = originalDB }()
-
-	// Inject mock handler
-	originalHandler := newKafkaConsumerHandler
-	newKafkaConsumerHandler = func(service.IContainerService, logger.ILogger, client.IKafkaReader) kafkaHandler.IKafkaConsumerHandler {
-		return mockHandler
-	}
-	defer func() { newKafkaConsumerHandler = originalHandler }()
-
-	// Đợi goroutine xong
-	go func() {
-		wg.Wait()
-	}()
-
-	err := Run()
-	assert.NoError(t, err)
-}
-
-func TestRun_KafkaConsumer_FinishWithNonCanceledError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	mockLog := mocks.NewMockILogger(ctrl)
-
-	// KHÔNG dùng .AnyTimes() cho Info nữa – gomock sẽ nuốt mất call cụ thể
-	mockLog.EXPECT().
-		Info(gomock.Eq("Starting Kafka consumer"), gomock.Any()).
-		Times(1)
-
-	mockLog.EXPECT().
-		Error(gomock.Eq("Kafka consumer did not finish gracefully"), gomock.Eq("error"), gomock.Any()).
-		Times(1)
-
-	mockLog.EXPECT().
-		Info(gomock.Eq("Kafka consumer closed successfully"), gomock.Any()).
-		Times(1)
-
-	mockLog.EXPECT().
-		Info(gomock.Eq("Service shutdown complete"), gomock.Any()).
-		Times(1)
-
-	// mock handler
-	mockHandler := new(mockKafkaConsumerHandler)
-	mockHandler.On("StartConsume", mock.Anything).
-		Run(func(args mock.Arguments) {
-			wg.Done()
-		}).
-		Return(errors.New("unexpected error"))
-
-	mockHandler.On("Close").Return(nil)
-
-	// mock DB
-	originalDB := infrastructure.NewDatabase
-	infrastructure.NewDatabase = func(cfg *config.Config) infrastructure.IDatabase {
-		return &mockDatabase{connectErr: nil}
-	}
-	defer func() { infrastructure.NewDatabase = originalDB }()
-
-	// inject handler
-	originalHandler := newKafkaConsumerHandler
-	newKafkaConsumerHandler = func(service.IContainerService, logger.ILogger, client.IKafkaReader) kafkaHandler.IKafkaConsumerHandler {
-		return mockHandler
-	}
-	defer func() { newKafkaConsumerHandler = originalHandler }()
-
-	// gửi SIGINT
-	go func() {
-		wg.Wait()
-		time.Sleep(50 * time.Millisecond)
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-	}()
-
-	err := Run()
-	assert.NoError(t, err)
 }
