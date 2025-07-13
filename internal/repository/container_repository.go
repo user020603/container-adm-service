@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/internal/dto"
 	"thanhnt208/container-adm-service/internal/model"
-	"thanhnt208/container-adm-service/external/client"
 	"thanhnt208/container-adm-service/pkg/logger"
 	"time"
 
@@ -414,9 +414,10 @@ func (r *containerRepository) GetContainerUptimeRatio(ctx context.Context, start
 	req := esapi.SearchRequest{
 		Index:          []string{"container_status"},
 		Body:           &buf,
-		TrackTotalHits: esapi.BoolPtr(true),
+		TrackTotalHits: true,
 	}
 	res, err := r.es.Do(ctx, req)
+	r.logger.Info("Executing ES search request...", "index", "container_status", "query", query)
 	if err != nil {
 		r.logger.Error("ES search request failed", "error", err)
 		return 0, err
@@ -490,7 +491,7 @@ func (r *containerRepository) GetContainerUptimeDuration(ctx context.Context, st
 	req := esapi.SearchRequest{
 		Index:          []string{"container_status"},
 		Body:           &buf,
-		TrackTotalHits: esapi.BoolPtr(true),
+		TrackTotalHits: true,
 	}
 	res, err := r.es.Do(ctx, req)
 	if err != nil {
